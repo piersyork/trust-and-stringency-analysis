@@ -1,0 +1,14 @@
+name: TRUST
+title: TRUST
+username:
+account: piersyork
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4227715
+bundleId: 4677426
+url: https://piersyork.shinyapps.io/TRUST/
+when: 1622807743.45676
+lastSyncTime: 1622807743.45679
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: app.R

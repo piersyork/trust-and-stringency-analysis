@@ -1,0 +1,56 @@
+---
+title: 'Random Effects: Covid Stringency'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+box::use(dplyr[...],
+         lme4[lmer, isSingular],
+         texreg[screenreg, htmlreg],
+         plm[plm])
+load("Data/panel_data.Rdata")
+```
+
+```{r RE}
+
+# basic bivariate regerssion (model 1)
+pooled1 <- lm(stringency_index ~ distrust_people, data)
+
+# simple random effects regression (model 2)
+model1 <- data %>% 
+  lmer(stringency_index ~ distrust_people +
+         (1 | location), .)
+
+# random effects with covariates (model 3)
+model4 <- data %>% 
+  lmer(stringency_index ~ distrust_people + log(gdp_per_capita) + lag(new_deaths_per_million, 14) +
+         lag(res_pct_chng, 7) + (1 | location), .)
+
+# pooled regression with covariates (model 4)
+pooled4 <- data %>% 
+  lm(stringency_index ~ distrust_people + log(gdp_per_capita) + lag(new_deaths_per_million, 14) +
+       lag(res_pct_chng, 14), .)
+
+```
+
+# htmlreg output
+```{r htmlreg_output, echo=FALSE, results='asis'}
+
+htmlreg(list(pooled1, model1, pooled4, model4), 
+        custom.gof.rows = list("Random Effects" = c("&nbsp; &#x2718;", "&nbsp; &#x2714;", 
+                                                    "&nbsp; &#x2718;", "&nbsp; &#x2714;")), 
+        doctype = FALSE, star.symbol = "\\*", center = FALSE, caption = "", 
+        groups = list("Time Invariant" = 1:2, "Time Variant" = 3:4), omit.coef = "Intercept",
+        custom.coef.names = c("<i>Distrust in People</i>", "<i>Logged GDP</i>", 
+                              "<i>New deaths per million <sub>t-14</sub></i>",
+                              "<i>Change in movement of people <sub>t-7</sub></i>"))
+```
+<br/><br/><br/>
+```{r data_table, echo=FALSE}
+data %>% 
+  na.omit() %>% 
+  mutate(across(alpha.3:location, factor)) %>% 
+  DT::datatable(filter = "top")
+```
+
