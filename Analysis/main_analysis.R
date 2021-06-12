@@ -305,8 +305,15 @@ data %>%
   screenreg()
 
 
+resid(model8) %>% 
+  as_tibble(rownames = "index") %>% 
+  ggplot(aes(as.numeric(index), value)) +
+  geom_point(alpha = 0.3)
 
-
+resid(model8) %>% 
+  as_tibble() %>% 
+  ggplot(aes(value)) +
+  geom_histogram()
 
 
 
