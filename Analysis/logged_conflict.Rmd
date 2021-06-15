@@ -1,0 +1,67 @@
+---
+title: "Logged Conflict?"
+output: html_document
+---
+
+```{r setup, results='hide', warning=FALSE, message=FALSE, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+# set wd as rproj folder
+setwd("../")
+# import functions
+options(box.path = getwd())
+box::use(dplyr[...],
+         ggplot2[...],
+         lme4[lmer],
+         texreg[screenreg, htmlreg],
+         plm[plm],
+         sandwich[vcovCL, vcovHC],
+         lmtest[coeftest],
+         lubridate[date],
+         magrittr[use_series, extract],
+         readr[read_csv],
+         # import own project functions
+         functions/ts[...])
+
+load_project_data()
+
+my_theme <- theme_minimal() +
+  theme(legend.position = "top",
+        axis.line.x = element_line(), axis.ticks.x = element_line(),
+        plot.caption = element_text(hjust = 0),
+        plot.tag.position = "topright", plot.tag = element_text(face = "bold"))
+
+theme_set(my_theme)
+
+```
+
+Should I use logged conflict instead of raw conflict?
+```{r logged_conflict}
+
+data <- data %>% 
+  filter(!is.na(distrust_people))
+
+data %>% plot_summarised(conflict_index, stringency_index) +
+  labs(title = "Relationship between raw conflict and stringency index")
+data %>% 
+  mutate(log_conflict = log(conflict_index)) %>% 
+  plot_summarised(log_conflict, stringency_index) +
+  labs(title = "Relationship between logged conflict and stringency index")
+
+data %>% plot_summarised(conflict_index, distrust_people) +
+  labs(title = "Relationship between raw conflict and distrust")
+data %>% 
+  mutate(log_conflict = log(conflict_index)) %>% 
+  plot_summarised(log_conflict, distrust_people) +
+  labs(title = "Relationship between logged conflict and distrust")
+# plotly::ggplotly()
+
+unique(data$conflict_index) %>% 
+  min(na.rm = TRUE)
+
+```
+
+
+
+
+
+

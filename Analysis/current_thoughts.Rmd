@@ -36,6 +36,13 @@ theme_set(my_theme)
 
 ```
 
+Model 4 includes all covariates\
+Model 5 adds a lagged variable for stringency\
+Model 6 removes res_pct_chng\
+Model 7 takes the log of conflict index\
+Model 7.5 is the same as Model 7 but excludes Nicaragua (is it an outlier?)\
+Model 8 includes a variable for total deaths so far. In theory this accounts for the previous effects of the pandemic
+
 ```{r significance, results='asis'}
 # adding other country fixed variables
 model4 <- data %>% 
@@ -76,22 +83,19 @@ model7_5 <- data %>%
 
 # include total deaths
 model8 <- data %>% 
-  # filter(!location == "Nicaragua") %>%
+  filter(!location == "Nicaragua") %>%
   lmer(stringency_index ~ distrust_people + conf_govt + total_deaths_per_million +
-         conflict_index + continent + deaths_per_mil_lag_5 +
+         log(conflict_index) + continent + deaths_per_mil_lag_5 +
          log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
          (1 | location), .)
+
+screenreg(model8)
 
 htmlreg(list(model4, model5, model6, model7, model7_5, model8), omit.coef = "Intercept", custom.model.names = c("Model 4", "Model 5", "Model 6", "Model 7", "Model 7.5", "Model 8"))
 
 ```
 
-Model 4 includes all covariates\
-Model 5 adds a lagged variable for stringency\
-Model 6 removes res_pct_chng\
-Model 7 takes the log of conflict index\
-Model 7.5 is the same as Model 7 but excludes Nicaragua (is it an outlier?)\
-Model 8 includes a variable for total deaths so far. In theory this accounts for the previous effects of the pandemic
+
 
 ```{r time_plots, results='hide'}
 # model 4
