@@ -41,7 +41,8 @@ Model 5 adds a lagged variable for stringency\
 Model 6 removes res_pct_chng\
 Model 7 takes the log of conflict index\
 Model 7.5 is the same as Model 7 but excludes Nicaragua (is it an outlier?)\
-Model 8 includes a variable for total deaths so far. In theory this accounts for the previous effects of the pandemic
+Model 8 same as model 7 but includes res_chng\
+Model 9 includes a variable for total deaths so far. In theory this accounts for the previous effects of the pandemic
 
 ```{r significance, results='asis'}
 # adding other country fixed variables
@@ -81,20 +82,27 @@ model7_5 <- data %>%
          log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
          (1 | location), .)
 
-# include total deaths
+# model 7 but including res_chng
 model8 <- data %>% 
+  lmer(stringency_index ~ distrust_people + deaths_per_mil_lag_5 + res_chng_lag_34 +
+         conf_govt + 
+         log(conflict_index) + continent +
+         log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
+         (1 | location), .)
+
+# include total deaths
+model9 <- data %>% 
   filter(!location == "Nicaragua") %>%
   lmer(stringency_index ~ distrust_people + conf_govt + total_deaths_per_million +
          log(conflict_index) + continent + deaths_per_mil_lag_5 +
          log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
          (1 | location), .)
 
-screenreg(model8)
 
-htmlreg(list(model4, model5, model6, model7, model7_5, model8), omit.coef = "Intercept", custom.model.names = c("Model 4", "Model 5", "Model 6", "Model 7", "Model 7.5", "Model 8"))
+
+htmlreg(list(model4, model5, model6, model7, model7_5, model8, model9), omit.coef = "Intercept", custom.model.names = c("Model 4", "Model 5", "Model 6", "Model 7", "Model 7.5", "Model 8", "Model 9"))
 
 ```
-
 
 
 ```{r time_plots, results='hide'}
@@ -156,6 +164,8 @@ data %>%
   mutate(log_conflict = log(conflict_index)) %>% 
   plot_summarised(log_conflict, distrust_people) +
   labs(title = "Relationship between logged conflict and distrust")
+
+min(data$conflict_index, na.rm = TRUE)
 ```
 
 

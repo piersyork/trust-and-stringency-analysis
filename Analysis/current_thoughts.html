@@ -207,6 +207,13 @@ my_theme &lt;- theme_minimal() +
         plot.tag.position = &quot;topright&quot;, plot.tag = element_text(face = &quot;bold&quot;))
 
 theme_set(my_theme)</code></pre>
+<p>Model 4 includes all covariates<br />
+Model 5 adds a lagged variable for stringency<br />
+Model 6 removes res_pct_chng<br />
+Model 7 takes the log of conflict index<br />
+Model 7.5 is the same as Model 7 but excludes Nicaragua (is it an outlier?)<br />
+Model 8 same as model 7 but includes res_chng<br />
+Model 9 includes a variable for total deaths so far. In theory this accounts for the previous effects of the pandemic</p>
 <pre class="r"><code># adding other country fixed variables
 model4 &lt;- data %&gt;% 
   lmer(stringency_index ~ distrust_people + deaths_per_mil_lag_5 + res_chng_lag_34 +
@@ -244,15 +251,25 @@ model7_5 &lt;- data %&gt;%
          log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
          (1 | location), .)
 
-# include total deaths
+# model 7 but including res_chng
 model8 &lt;- data %&gt;% 
-  # filter(!location == &quot;Nicaragua&quot;) %&gt;%
-  lmer(stringency_index ~ distrust_people + conf_govt + total_deaths_per_million +
-         conflict_index + continent + deaths_per_mil_lag_5 +
+  lmer(stringency_index ~ distrust_people + deaths_per_mil_lag_5 + res_chng_lag_34 +
+         conf_govt + 
+         log(conflict_index) + continent +
          log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
          (1 | location), .)
 
-htmlreg(list(model4, model5, model6, model7, model7_5, model8), omit.coef = &quot;Intercept&quot;, custom.model.names = c(&quot;Model 4&quot;, &quot;Model 5&quot;, &quot;Model 6&quot;, &quot;Model 7&quot;, &quot;Model 7.5&quot;, &quot;Model 8&quot;))</code></pre>
+# include total deaths
+model9 &lt;- data %&gt;% 
+  filter(!location == &quot;Nicaragua&quot;) %&gt;%
+  lmer(stringency_index ~ distrust_people + conf_govt + total_deaths_per_million +
+         log(conflict_index) + continent + deaths_per_mil_lag_5 +
+         log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
+         (1 | location), .)
+
+
+
+htmlreg(list(model4, model5, model6, model7, model7_5, model8, model9), omit.coef = &quot;Intercept&quot;, custom.model.names = c(&quot;Model 4&quot;, &quot;Model 5&quot;, &quot;Model 6&quot;, &quot;Model 7&quot;, &quot;Model 7.5&quot;, &quot;Model 8&quot;, &quot;Model 9&quot;))</code></pre>
 <table class="texreg" style="margin: 10px auto;border-collapse: collapse;border-spacing: 0px;caption-side: bottom;color: #000000;border-top: 2px solid #000000;">
 <caption>
 Statistical models
@@ -280,6 +297,9 @@ Model 7.5
 <th style="padding-left: 5px;padding-right: 5px;">
 Model 8
 </th>
+<th style="padding-left: 5px;padding-right: 5px;">
+Model 9
+</th>
 </tr>
 </thead>
 <tbody>
@@ -303,7 +323,10 @@ distrust_people
 0.23<sup>*</sup>
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
-0.27<sup>*</sup>
+0.12
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+0.23<sup>*</sup>
 </td>
 </tr>
 <tr>
@@ -328,6 +351,9 @@ distrust_people
 <td style="padding-left: 5px;padding-right: 5px;">
 (0.13)
 </td>
+<td style="padding-left: 5px;padding-right: 5px;">
+(0.10)
+</td>
 </tr>
 <tr>
 <td style="padding-left: 5px;padding-right: 5px;">
@@ -349,6 +375,9 @@ deaths_per_mil_lag_5
 0.62<sup>***</sup>
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
+0.53<sup>***</sup>
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
 0.64<sup>***</sup>
 </td>
 </tr>
@@ -361,6 +390,9 @@ deaths_per_mil_lag_5
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
 (0.00)
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+(0.02)
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
 (0.02)
@@ -395,6 +427,9 @@ res_chng_lag_34
  
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
+0.57<sup>***</sup>
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
  
 </td>
 </tr>
@@ -416,6 +451,9 @@ res_chng_lag_34
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
  
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+(0.01)
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
  
@@ -441,7 +479,10 @@ conflict_index
  
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
-0.00
+ 
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+ 
 </td>
 </tr>
 <tr>
@@ -464,7 +505,10 @@ conflict_index
  
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
-(0.00)
+ 
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+ 
 </td>
 </tr>
 <tr>
@@ -487,7 +531,10 @@ continentAsia
 -1.98
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
--7.60
+-3.41
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+-2.02
 </td>
 </tr>
 <tr>
@@ -510,7 +557,10 @@ continentAsia
 (6.48)
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
-(8.19)
+(9.05)
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+(6.49)
 </td>
 </tr>
 <tr>
@@ -533,7 +583,10 @@ continentEurope
 -4.68
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
--12.93
+-12.92
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+-4.55
 </td>
 </tr>
 <tr>
@@ -556,7 +609,10 @@ continentEurope
 (6.97)
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
-(8.54)
+(10.27)
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+(6.98)
 </td>
 </tr>
 <tr>
@@ -579,7 +635,10 @@ continentNorth America
 3.23
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
--15.82
+-15.45
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+3.37
 </td>
 </tr>
 <tr>
@@ -602,7 +661,10 @@ continentNorth America
 (8.00)
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
-(9.02)
+(10.02)
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+(8.02)
 </td>
 </tr>
 <tr>
@@ -625,7 +687,10 @@ continentOceania
 -8.67
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
--17.47
+-20.54
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+-8.71
 </td>
 </tr>
 <tr>
@@ -648,7 +713,10 @@ continentOceania
 (9.46)
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
-(11.80)
+(12.90)
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+(9.48)
 </td>
 </tr>
 <tr>
@@ -671,7 +739,10 @@ continentSouth America
 10.82
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
-5.11
+-2.02
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+11.04
 </td>
 </tr>
 <tr>
@@ -694,7 +765,10 @@ continentSouth America
 (6.99)
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
-(8.75)
+(9.91)
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+(7.01)
 </td>
 </tr>
 <tr>
@@ -717,7 +791,10 @@ conf_govt
 0.06
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
-0.05
+-0.11
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+0.06
 </td>
 </tr>
 <tr>
@@ -742,6 +819,9 @@ conf_govt
 <td style="padding-left: 5px;padding-right: 5px;">
 (0.11)
 </td>
+<td style="padding-left: 5px;padding-right: 5px;">
+(0.08)
+</td>
 </tr>
 <tr>
 <td style="padding-left: 5px;padding-right: 5px;">
@@ -763,7 +843,10 @@ log(gdp_per_capita)
 3.53
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
-6.41
+1.82
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+3.56
 </td>
 </tr>
 <tr>
@@ -786,7 +869,10 @@ log(gdp_per_capita)
 (3.74)
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
-(4.76)
+(4.80)
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+(3.75)
 </td>
 </tr>
 <tr>
@@ -809,7 +895,10 @@ ghs
 0.17
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
-0.20
+-0.02
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+0.18
 </td>
 </tr>
 <tr>
@@ -832,7 +921,10 @@ ghs
 (0.16)
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
-(0.20)
+(0.23)
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+(0.16)
 </td>
 </tr>
 <tr>
@@ -855,7 +947,10 @@ pop.km2
 0.01
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
-0.02
+0.01
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+0.01
 </td>
 </tr>
 <tr>
@@ -867,6 +962,9 @@ pop.km2
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
 (0.00)
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+(0.01)
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
 (0.01)
@@ -901,7 +999,10 @@ democracy_index
 -1.07
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
--0.42
+0.19
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+-1.09
 </td>
 </tr>
 <tr>
@@ -924,7 +1025,10 @@ democracy_index
 (1.25)
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
-(1.57)
+(1.65)
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+(1.25)
 </td>
 </tr>
 <tr>
@@ -947,7 +1051,10 @@ ethnic
 -14.66<sup>*</sup>
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
--8.11
+-3.83
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+-14.64<sup>*</sup>
 </td>
 </tr>
 <tr>
@@ -970,7 +1077,10 @@ ethnic
 (7.37)
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
-(9.21)
+(8.92)
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+(7.39)
 </td>
 </tr>
 <tr>
@@ -993,7 +1103,10 @@ education_index
 -11.07
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
--9.55
+30.45
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+-11.04
 </td>
 </tr>
 <tr>
@@ -1016,7 +1129,10 @@ education_index
 (22.85)
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
-(27.78)
+(29.55)
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+(22.89)
 </td>
 </tr>
 <tr>
@@ -1028,6 +1144,9 @@ stringency_index_lag_1
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
 0.99<sup>***</sup>
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+ 
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
  
@@ -1064,6 +1183,9 @@ stringency_index_lag_1
 <td style="padding-left: 5px;padding-right: 5px;">
  
 </td>
+<td style="padding-left: 5px;padding-right: 5px;">
+ 
+</td>
 </tr>
 <tr>
 <td style="padding-left: 5px;padding-right: 5px;">
@@ -1085,7 +1207,10 @@ log(conflict_index)
 1.46
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
- 
+2.79<sup>*</sup>
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+1.47
 </td>
 </tr>
 <tr>
@@ -1108,7 +1233,10 @@ log(conflict_index)
 (1.02)
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
- 
+(1.24)
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+(1.02)
 </td>
 </tr>
 <tr>
@@ -1131,10 +1259,16 @@ total_deaths_per_million
  
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
+ 
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
 -0.00<sup>**</sup>
 </td>
 </tr>
 <tr>
+<td style="padding-left: 5px;padding-right: 5px;">
+ 
+</td>
 <td style="padding-left: 5px;padding-right: 5px;">
  
 </td>
@@ -1177,7 +1311,10 @@ AIC
 195411.89
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
-198411.35
+171326.38
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+195421.79
 </td>
 </tr>
 <tr>
@@ -1200,7 +1337,10 @@ BIC
 195557.77
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
-198565.64
+171478.38
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+195575.77
 </td>
 </tr>
 <tr>
@@ -1223,7 +1363,10 @@ Log Likelihood
 -97687.95
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
--99186.67
+-85644.19
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+-97691.90
 </td>
 </tr>
 <tr>
@@ -1246,7 +1389,10 @@ Num. obs.
 24443
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
-24855
+22029
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+24443
 </td>
 </tr>
 <tr>
@@ -1269,7 +1415,10 @@ Num. groups: location
 58
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
-59
+53
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+58
 </td>
 </tr>
 <tr>
@@ -1292,7 +1441,10 @@ Var: location (Intercept)
 74.08
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
-119.34
+97.61
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+74.40
 </td>
 </tr>
 <tr style="border-bottom: 2px solid #000000;">
@@ -1315,24 +1467,21 @@ Var: Residual
 171.49
 </td>
 <td style="padding-left: 5px;padding-right: 5px;">
-169.07
+137.81
+</td>
+<td style="padding-left: 5px;padding-right: 5px;">
+171.45
 </td>
 </tr>
 </tbody>
 <tfoot>
 <tr>
-<td style="font-size: 0.8em;" colspan="7">
+<td style="font-size: 0.8em;" colspan="8">
 <sup><em><strong></sup>p &lt; 0.001; <sup></strong></sup>p &lt; 0.01; <sup></em></sup>p &lt; 0.05
 </td>
 </tr>
 </tfoot>
 </table>
-<p>Model 4 includes all covariates<br />
-Model 5 adds a lagged variable for stringency<br />
-Model 6 removes res_pct_chng<br />
-Model 7 takes the log of conflict index<br />
-Model 7.5 is the same as Model 7 but excludes Nicaragua (is it an outlier?)<br />
-Model 8 includes a variable for total deaths so far. In theory this accounts for the previous effects of the pandemic</p>
 <pre class="r"><code># model 4
 m4_time &lt;- data %&gt;% 
   get_coefs(stringency_index ~ distrust_people + deaths_per_mil_lag_5 + res_chng_lag_34 +
