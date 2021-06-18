@@ -84,7 +84,7 @@ screenreg(model6)
 model7 <- data %>% 
   # filter(!location == "Nicaragua") %>%
   lmer(stringency_index ~ distrust_people + deaths_per_mil_lag_5 + conf_govt + 
-         conflict_index + continent +
+         log(conflict_index) + continent +
          log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
          (1 | location), .)
 screenreg(model7)
@@ -93,7 +93,7 @@ screenreg(model7)
 model8 <- data %>% 
   # filter(!location == "Nicaragua") %>%
   lmer(stringency_index ~ distrust_people + conf_govt + total_deaths_per_million +
-         conflict_index + continent + deaths_per_mil_lag_5 +
+         log(conflict_index) + continent + deaths_per_mil_lag_5 +
          log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
          (1 | location), .)
 screenreg(model8)
@@ -144,7 +144,7 @@ data %>%
 ## Weekly data models with excess deaths instead of recorded covid deaths
 weekly_data %>% 
   lmer(stringency_index ~ distrust_people + excess_lag_1 + conf_govt + 
-         conflict_index + continent +
+         log(conflict_index) + continent +
          log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
          (1 | location), .) %>% 
   screenreg()
@@ -266,7 +266,7 @@ data_deaths_before <- data %>%
 data %>% 
   left_join(data_deaths_before) %>% 
   lm(max_stringency ~ distrust_people + conf_govt + continent + log(gdp_per_capita) +
-       ghs + pop.km2 + democracy_index + ethnic + education_index + conflict_index +
+       ghs + pop.km2 + democracy_index + ethnic + education_index + log(conflict_index) +
        deaths_before_max, .) %>% 
   coeftest(vcovCL, cluster = ~location) %>% 
   screenreg()
@@ -275,13 +275,13 @@ data %>%
 ## deaths as outcome
 data %>% 
   lmer(new_deaths_per_million ~ distrust_people + conf_govt + continent + log(gdp_per_capita) +
-         ghs + pop.km2 + democracy_index + ethnic + education_index + conflict_index +
+         ghs + pop.km2 + democracy_index + ethnic + education_index + log(conflict_index) +
          stringency_index_lag_7 + (1 | location), .) %>% 
   screenreg()
 
 data %>% 
   plm(new_deaths_per_million ~ distrust_people + conf_govt + continent + log(gdp_per_capita) +
-        ghs + pop.km2 + democracy_index + ethnic + education_index + conflict_index +
+        ghs + pop.km2 + democracy_index + ethnic + education_index + log(conflict_index) +
         stringency_index_lag_7, .,
       index = c("location", "date"), effect = "time") %>% 
   coeftest(vcovHC) %>% 
@@ -289,7 +289,7 @@ data %>%
 
 weekly_data %>% 
   lmer(excess_deaths_per_100k ~ distrust_people + conf_govt + continent + log(gdp_per_capita) +
-         ghs + pop.km2 + democracy_index + ethnic + education_index + conflict_index +
+         ghs + pop.km2 + democracy_index + ethnic + education_index + log(conflict_index) +
          stringency_index_lag_4 +
          (1 | location), .) %>% 
   screenreg()

@@ -1,12 +1,18 @@
 ---
 title: "current_thoughts/questions"
 output: 
+  pdf_document:
+    toc: yes
+    fig_caption: yes
   html_document:
+    code_folding: hide
+  html_notebook:
+    
     code_folding: hide
 ---
 
-```{r setup, results='hide', warning=FALSE, message=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```{r setup, results='hide', warning=FALSE, message=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 # set wd as rproj folder
 setwd("../")
 # import functions
@@ -14,7 +20,7 @@ options(box.path = getwd())
 box::use(dplyr[...],
          ggplot2[...],
          lme4[lmer],
-         texreg[screenreg, htmlreg],
+         texreg[screenreg, htmlreg, texreg],
          plm[plm],
          sandwich[vcovCL, vcovHC],
          lmtest[coeftest],
@@ -100,7 +106,7 @@ model9 <- data %>%
 
 
 
-htmlreg(list(model4, model5, model6, model7, model7_5, model8, model9), omit.coef = "Intercept", custom.model.names = c("Model 4", "Model 5", "Model 6", "Model 7", "Model 7.5", "Model 8", "Model 9"))
+texreg(list(model4, model5, model6, model7, model7_5, model8, model9), omit.coef = "Intercept", custom.model.names = c("Model 4", "Model 5", "Model 6", "Model 7", "Model 7.5", "Model 8", "Model 9"))
 
 ```
 
@@ -148,7 +154,9 @@ m8_time$plot +
 
 ```
 
-Should I include use logged conflict instead of raw conflict
+Should I include use logged conflict instead of raw conflict\
+
+
 ```{r logged_conflict}
 
 data %>% plot_summarised(conflict_index, stringency_index) +

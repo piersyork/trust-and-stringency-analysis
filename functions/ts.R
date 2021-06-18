@@ -98,7 +98,9 @@ load_project_data = function() {
     filter(!is.na(distrust_people)) %>% 
     group_by(location) %>%
     arrange(date) %>%
-    mutate(deaths_per_mil_lag_5 = lag(new_deaths_per_million, 5),
+    mutate(log_gdp = log(gdp_per_capita),
+           log_conflict = log(conflict_index),
+           deaths_per_mil_lag_5 = lag(new_deaths_per_million, 5),
            deaths_per_mil_lag_6 = lag(new_deaths_per_million, 6),
            deaths_per_mil_lag_7 = lag(new_deaths_per_million, 7),
            deaths_per_mil_lag_10 = lag(new_deaths_per_million, 10),
@@ -115,6 +117,16 @@ load_project_data = function() {
            res_chng_lag_28 = lag(res_pct_chng, 28),
            res_chng_lag_34 = lag(res_pct_chng, 34),
            res_chng_lag_40 = lag(res_pct_chng, 40),
+           trans_chng_lag_5 = lag(trans_pct_chng, 5),
+           trans_chng_lag_6 = lag(trans_pct_chng, 6),
+           trans_chng_lag_7 = lag(trans_pct_chng, 7),
+           trans_chng_lag_10 = lag(trans_pct_chng, 10),
+           trans_chng_lag_14 = lag(trans_pct_chng, 14),
+           trans_chng_lag_20 = lag(trans_pct_chng, 20),
+           trans_chng_lag_24 = lag(trans_pct_chng, 24),
+           trans_chng_lag_28 = lag(trans_pct_chng, 28),
+           trans_chng_lag_34 = lag(trans_pct_chng, 34),
+           trans_chng_lag_40 = lag(trans_pct_chng, 40),
            stringency_index_lag_1 = lag(stringency_index, 1),
            stringency_index_lag_2 = lag(stringency_index, 2),
            stringency_index_lag_4 = lag(stringency_index, 4),

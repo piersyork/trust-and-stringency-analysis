@@ -99,7 +99,21 @@ data %>%
        caption = "Source: Our World in Data") +
   ggsci::scale_color_lancet()
 
-
+# plot of change in transport
+data %>% 
+  select(location, date, trusting, trans_pct_chng) %>% 
+  na.omit() %>%
+  group_by(trusting, date) %>% 
+  summarise(trans_pct_chng = mean(trans_pct_chng)) %>% 
+  ggplot(aes(date, trans_pct_chng, colour = factor(trusting))) +
+  geom_smooth(span = 0.1, se = FALSE, size = 0.5) +
+  geom_hline(yintercept = 0, colour = "grey", linetype = "dashed") +
+  scale_x_date(limits = c(as_date("2020-03-01"), as_date("2021-03-01")), 
+               date_breaks = "8 weeks", date_labels = "%B") +
+  labs(title = "Percent change in residential",
+       x = "", y = "", colour = "",
+       caption = "Source: Our World in Data") +
+  ggsci::scale_color_lancet()
 
 
 pool <- data %>% 
