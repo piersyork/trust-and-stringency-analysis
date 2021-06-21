@@ -64,6 +64,7 @@ plot_homogeneity <- function(model) {
   tibble(fitted = fitted(model), 
          std.resid = pull_resid(model, standardize = TRUE, type = "eb")) %>% 
     ggplot(aes(fitted, sqrt(Mod(std.resid)))) +
-    geom_point() +
-    geom_smooth()
+    geom_point(colour = "#01468B") +
+    geom_smooth(colour = "#42B540") +
+    labs(x = "Fitted Values")
 }

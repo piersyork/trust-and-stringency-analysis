@@ -68,7 +68,7 @@ model <- lmer(form, data)
 plot_vif(model) +
   theme(axis.text.x = element_text(size = 11))
 
-
+plot_homogeneity(model)
 std.res
 
 
