@@ -233,11 +233,95 @@ plot_summarised = function(data, x, y, .poly = 1) {
 # data %>% 
 #   plot_summarised(conf_govt, stringency_index)
 
+#' @export
+plot_sample_map = function(data, map_tidy, .formula) {
+  box::use(dplyr[...],
+           stats[...],
+           ggplot2[...],
+           functions/ts[effective_sample])
+  
+  df <- effective_sample(data, .formula)
 
+  
+  map_tidy %>% 
+    left_join(df, by = c("id" = "location")) %>% 
+    mutate(weights = ifelse(!is.na(weights), weights, 0)) %>%
+    ggplot(aes(x = long, y = lat, group = group, fill = weights)) +
+    geom_polygon(show.legend = FALSE, color = "grey", size = 0.1) + #
+    scale_fill_continuous(high = "black", low = "white", na.value = "white") + #3182bd
+    #scale_fill_distiller(direction = 1) +
+    coord_equal() +
+    theme_void() +
+    theme(plot.title = element_text(hjust = 0.05), 
+          plot.tag.position = c(0.95, 1), plot.tag = element_text(size = 10))
+  
+}
 
+#' @export
+effective_sample = function(data, .formula, model = NULL) {
+  box::use(dplyr[...],
+           stats[...],
+           ggplot2[...],
+           tibble[rownames_to_column])
+  ## Aronow & Samii (2015) method to get country weights
+  # run regression model
+  effc_reg <- lm(.formula, data)
+  
+  
+  # subset to remove any omitted variable 
+  all_vars <- effc_reg$model %>% colnames()
+  
+  data_sub <- data %>%
+    select(all_of(all_vars), location) %>% 
+    na.omit()
+  
+  
+  # residuals
+  d.tilde <- as.numeric(residuals(effc_reg))
+  w <- d.tilde^2
+  
+  # weights
+  w1 <- tapply(w, data_sub$location, mean)
+  
+  # data frame of countries and weights
+  df <- as.data.frame(w1) %>% 
+    mutate(weights_pct = round((w1/sum(w1))*100, 4),
+           weights = (w1/max(w1))) %>% 
+    arrange(desc(weights)) %>% 
+    rownames_to_column(var = "location")
+  return(df)
+  
+}
 
-
-
+#' @export
+table_continents <- function(data) {
+  box::use(dplyr[...])
+  
+  continents <- data$continent %>% unique()
+  countries_in <- list()
+  for (i in 1:length(continents)) {
+    countries_in[[i]] <- data %>% 
+      filter(continent == continents[i]) %>% 
+      pull(location)
+  }
+  names(countries_in) <- continents
+  
+  big_length <- 0
+  for (i in 1:length(countries_in)) {
+    test_length <- length(countries_in[[i]])
+    if (test_length > big_length) {
+      big_length <- test_length
+    }
+  }
+  
+  for (i in 1:length(countries_in)) {
+    while (length(countries_in[[i]]) < big_length) {
+      countries_in[[i]] <- c(countries_in[[i]], "")
+    }
+  }
+  
+  return(as_tibble(countries_in))
+}
 
 
 

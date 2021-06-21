@@ -28,11 +28,31 @@ lmer_time_deaths <- data %>%
               (1 | location), n_days = 14, coef_position = 4)
 
 # coef on distrust in a OLS model over time
+form <- stringency_index ~ distrust_people + conf_govt + total_deaths_per_million +
+  conflict_index + continent + deaths_per_mil_lag_5 +
+  log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index
+
 lm_time <- data %>% 
-  get_coefs(stringency_index ~ distrust_people + conf_govt + total_deaths_per_million +
-              conflict_index + continent + deaths_per_mil_lag_5 +
-              log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index,
-            n_days = 1, method = "lm", coef_position = 2, start = "2020-04-01")
+  get_coefs(form, n_days = 1, method = "lm", coef_position = 2, start = "2020-04-01")
+
+lm_time$df$estimate %>% mean()
+
+data %>% 
+  lmer(update(form, ~ . + (1 | location)), .) %>% 
+  screenreg()
+
+data %>% 
+  lm(form, .) %>% 
+  screenreg()
+
+data %>% 
+  plm(form, ., index = c("location", "date"), effect = "time") %>% 
+  summary() %>% 
+  use_series(coefficients) %>% 
+  data.frame() %>% 
+  use_series(Estimate) %>% 
+  extract(1)
+  
 
 # same but for deaths coef
 lm_time_deaths <- data %>% 

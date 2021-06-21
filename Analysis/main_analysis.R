@@ -17,6 +17,14 @@ box::use(dplyr[...],
 # imports data for the project (function defined in functions/ts.r)
 load_project_data()
 
+# Set theme
+my_theme <- theme_minimal() +
+  theme(legend.position = "top",
+        axis.line.x = element_line(), axis.ticks.x = element_line(),
+        plot.caption = element_text(hjust = 0))
+
+theme_set(my_theme)
+
 ## Initial models
 # pooled regression clustered SE on location
 pooled1 <- data %>% 
@@ -93,11 +101,69 @@ screenreg(model7)
 model8 <- data %>% 
   # filter(!location == "Nicaragua") %>%
   lmer(stringency_index ~ distrust_people + conf_govt + total_deaths_per_million +
-         log(conflict_index) + continent + deaths_per_mil_lag_5 +
+         log(conflict_index) + continent + deaths_per_mil_lag_5 + regime_type +
          log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
          (1 | location), .)
 screenreg(model8)
 
+model10 <- data %>% 
+  lmer(stringency_index ~ distrust_people*continent + conf_govt + total_deaths_per_million +
+         log_conflict + continent + deaths_per_mil_lag_5 + regime_type + gdp_growth +
+         log_gdp + ghs + pop.km2 + democracy_index + ethnic + education_index +
+         (1 | location), .)
+screenreg(list(model8, model10))
+
+methods(class = "merMod")
+
+coefs <- summary(model10) %>% 
+  use_series(coefficients) %>% 
+  data.frame() %>% 
+  as_tibble(rownames = "var") %>% 
+  extract(-1,) %>% 
+  print(n = 30)
+
+distrust_df <- coefs[c(1, 21, 22, 23, 24, 25), ] %>% 
+  t() %>% 
+  as_tibble(rownames = "val") 
+
+colnames(distrust_df) <- make.names(distrust_df[1, ])
+distrust_df <- distrust_df[-1,]
+distrust_df %>% 
+  mutate(across(distrust_people:distrust_people.continentSouth.America, as.numeric),
+         across(distrust_people.continentAsia:distrust_people.continentSouth.America,
+                ~distrust_people + .x)) %>% 
+  extract(1,) %>% 
+  t() %>% 
+  data.frame() %>% 
+  as_tibble(rownames = "cont") %>% 
+  extract(-1,) %>% 
+  `colnames<-`(c("cont", "est")) %>% 
+  mutate(est = as.numeric(est),
+         cont = c("Africa", "Asia", "Europe", "North America", "Oceania", "South America")) %>% 
+  ggplot(aes(forcats::fct_reorder(cont, est), est)) +
+  geom_col() +
+  theme() #axis.text.x = element_text(angle = 0, hjust = 1, vjust = 1)
+  
+
+coef(model10)
+data$continent %>% unique()
+data$regime_type %>% unique()
+
+model11 <- data %>% 
+  lmer(stringency_index ~ distrust_people + conf_govt + total_deaths_per_million +
+         log(conflict_index) + continent + deaths_per_mil_lag_5 +
+         log(gdp_per_capita) + ghs + pop.km2 + ethnic + education_index +
+         poly(democracy_index, 2, raw = TRUE) + 
+         (1 | location), .)
+model12 <- data %>% 
+  lmer(stringency_index ~ distrust_people + conf_govt + total_deaths_per_million +
+         log(conflict_index) + continent + deaths_per_mil_lag_5 +
+         log(gdp_per_capita) + ghs + pop.km2 + ethnic + education_index +
+         democracy_index + regime_type +
+         (1 | location), .)
+screenreg(list(model11, model12))
+methods(class = "merMod")
+residuals(model12) 
 # multivariate pooled model with country clustered SE
 pooled4 <- data %>% 
   lm(stringency_index ~ distrust_people + log(gdp_per_capita) + deaths_per_mil_lag_7 +
@@ -110,6 +176,7 @@ screenreg(list(model1, model2, model3, model4, model5))
 screenreg(list(pooled1, model1, pooled4, model4), 
           custom.gof.rows = list("Random Effects" = c("NO", "YES", "NO", "YES")),
           omit.coef = "Intercept")
+
 
 
 
@@ -148,6 +215,8 @@ weekly_data %>%
          log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
          (1 | location), .) %>% 
   screenreg()
+
+
 
 ## based on lag_testing
 data %>% 
@@ -195,7 +264,7 @@ s = data %>%
          log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
          (1 | location), start = date_begin, n_days = 7)
 
-
+s$df$estimate %>% mean()
 sum4 <- summary(model4)
 sum4$ngrps 
 sum4$coefficients
@@ -305,17 +374,10 @@ data %>%
   screenreg()
 
 
-resid(model8) %>% 
-  as_tibble(rownames = "index") %>% 
-  ggplot(aes(as.numeric(index), value)) +
-  geom_point(alpha = 0.3)
-
-resid(model8) %>% 
-  as_tibble() %>% 
-  ggplot(aes(value)) +
-  geom_histogram()
-
-
-
+data %>% 
+  select(continent, location) %>% 
+  distinct() %>% 
+  use_series(continent) %>% 
+  table()
 
 

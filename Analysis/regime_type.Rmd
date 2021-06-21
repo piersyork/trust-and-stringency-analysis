@@ -1,0 +1,87 @@
+---
+title: "regime_type"
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, results='hide', warning=FALSE, message=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+# set wd as rproj folder
+setwd("../")
+# import functions
+options(box.path = getwd())
+box::use(dplyr[...],
+         ggplot2[...],
+         lme4[lmer],
+         texreg[screenreg, htmlreg, texreg],
+         plm[plm],
+         sandwich[vcovCL, vcovHC],
+         lmtest[coeftest],
+         lubridate[date],
+         magrittr[use_series, extract],
+         readr[read_csv],
+         ggsci[scale_colour_lancet],
+         # import own project functions
+         functions/ts[...],
+         functions/ap[plot_vif])
+
+load_project_data()
+
+my_theme <- theme_minimal() +
+  theme(legend.position = "top",
+        axis.line.x = element_line(), axis.ticks.x = element_line(),
+        plot.caption = element_text(hjust = 0),
+        plot.tag.position = "topright", plot.tag = element_text(face = "bold"))
+
+theme_set(my_theme)
+
+```
+
+
+```{r plot_rel}
+
+data %>% plot_summarised(democracy_index, distrust_people, .poly = 2) +
+  labs(title = "Relationship between democracy index and distrust",
+       subtitle = "Formula: distrust_people ~ poly(democracy_index, 2, raw = TRUE)")
+
+data %>% 
+  select(regime_type, location, distrust_people) %>% 
+  na.omit() %>% 
+  distinct() %>% 
+  ggplot(aes(factor(regime_type, c("Authoritarian", "Hybrid regime",
+                                   "Flawed democracy", "Full democracy")), 
+             distrust_people, colour = regime_type)) +
+  geom_boxplot(show.legend = FALSE) +
+  scale_colour_lancet() +
+  labs(title = "Boxplot of distrust for different regime types",
+       x = "")
+
+data %>% 
+  select(regime_type, location, distrust_people, democracy_index) %>% 
+  na.omit() %>% 
+  distinct() %>% 
+  ggplot(aes(democracy_index, distrust_people, colour = regime_type)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  scale_colour_lancet()
+
+  
+```
+
+```{r colin}
+modelx <- lmer(stringency_index ~ distrust_people + conf_govt + ghs + ethnic + 
+       regime_type + pop.km2 + log_gdp + log_conflict + deaths_per_mil_lag_5 +
+       (1 | location), data)
+modely <- lmer(stringency_index ~ distrust_people + conf_govt + ghs + ethnic + regime_type +
+       democracy_index + pop.km2 + log_gdp + log_conflict + deaths_per_mil_lag_5 +
+       (1 | location), data)
+
+
+plot_vif(modelx) + 
+  labs(title = "Multicolinearity: Model including regime_type")
+plot_vif(modely) +
+  labs(title = "Multicolinearity: Model including regime_type and democracy_index")
+
+```
+

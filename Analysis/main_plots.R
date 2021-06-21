@@ -165,11 +165,35 @@ data %>%
   plot_summarised(log_gdp, stringency_index)
 
 
+data %>% 
+  select(regime_type, location, distrust_people) %>% 
+  na.omit() %>% 
+  distinct() %>% 
+  ggplot(aes(factor(regime_type, c("Authoritarian", "Hybrid regime",
+                                   "Flawed democracy", "Full democracy")), distrust_people)) +
+  geom_boxplot()
+data %>% plot_summarised(democracy_index, distrust_people, .poly = 2)
 
+data %>% 
+  select(regime_type, location, distrust_people, democracy_index) %>% 
+  na.omit() %>% 
+  distinct() %>% 
+  ggplot(aes(democracy_index, distrust_people, colour = regime_type)) +
+  geom_point() +
+  geom_smooth(method = lm)
 
+data %>% 
+  select(distrust_people, stringency_index, location, continent) %>% 
+  na.omit() %>% 
+  group_by(location) %>% 
+  summarise(distrust_people = mean(distrust_people), 
+            stringency_index = mean(stringency_index),
+            continent = continent) %>% 
+  ggplot(aes(distrust_people, stringency_index, colour = continent)) +
+  geom_point() +
+  geom_smooth(method = lm)
 
-
-
+  
 
 
 

@@ -33,6 +33,12 @@ res2 <- data %>%
              education_index + ghs + pop.km2 + democracy_index +
              (1 | location), lag_var = res_pct_chng)
 
+trans <- data %>% 
+  test_lag(stringency_index ~ distrust_people + log(gdp_per_capita) + deaths_per_mil_lag_7 +
+             education_index + ghs + pop.km2 + democracy_index +
+             (1 | location), lag_var = trans_pct_chng)
+
+
 deaths_with_str <- data %>% 
   test_lag(stringency_index ~ distrust_people + stringency_index_lag_7 + (1 | location), 
            lag_var = new_deaths_per_million, n_lag = 50)
