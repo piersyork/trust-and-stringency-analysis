@@ -1,8 +1,9 @@
-library(tidyverse)
-library(texreg)
-library(york)
-library(readxl)
-library(lubridate)
+
+box::use(dplyr[...],
+         readr[read_csv, cols, write_csv],
+         readxl[read_xlsx, read_xls],
+         tidyr[gather],
+         lubridate[date, dmy])
 not_all_na <- function(x) any(!is.na(x))
 
 covid_raw <- read_csv("Raw/owid-covid-data.csv", col_types = cols(.default = "d", 
@@ -17,7 +18,7 @@ covid_positive <- covid_raw %>%
   filter(date == max(date)) %>% 
   rename(alpha.3 = iso_code) %>% 
   select(-date)
-  
+
 country_iso <- read_csv("Raw/all.csv")
 colnames(country_iso) <- (tolower(make.names(colnames(country_iso))))
 
@@ -62,7 +63,7 @@ health_spending <- health_spending_raw %>%
   arrange(location) %>% 
   group_by(location) %>% 
   na.omit() %>% 
-  filter(year == max(year)) %>% 
+  filter(year == "2018") %>% 
   select(-year)
 
 life_exp_raw <- read_csv("Raw/life_expectancy.csv")
@@ -72,7 +73,7 @@ life_exp <- life_exp_raw %>%
   arrange(location) %>% 
   group_by(location) %>% 
   na.omit() %>% 
-  filter(year == max(year))
+  filter(year == "2018")
 
 
 gdp_growth <- read_csv("Raw/gdp_growth.csv", col_types = cols(location = "c",
@@ -128,57 +129,57 @@ covid_test <- covid_raw %>%
   mutate(across(total_tests:total_vaccinations, ~ ifelse(. == -Inf, NA, .)))
   
 
-first_case <- covid_raw %>% 
-  select(iso_code, date, total_cases, total_cases_per_million, total_tests_per_thousand) %>% 
-  rename(alpha.3 = iso_code) %>% 
-  filter(!total_cases == 0) %>% 
-  group_by(alpha.3) %>% 
-  filter(date == min(date)) %>% 
-  select(alpha.3, date) %>% 
-  rename(first_case = date) %>% 
-  ungroup()
-
-stringency_raw <- read_xlsx("Raw/OxCGRT_timeseries_all.xlsx")
-stringency <- stringency_raw %>% 
-  gather(key = "date", value = "stringency", -country_code, -country_name) %>% 
-  mutate(date = dmy(date)) %>% 
-  `colnames<-`(c("alpha.3", "location", "date", "stringency"))
-avg_stringency3 <- stringency %>% 
-  left_join(first_case) %>% 
-  group_by(alpha.3) %>% 
-  filter(date >= first_case) %>% 
-  summarise(avg_stringency = mean(stringency, na.rm = TRUE))
-avg_stringency2 <- stringency %>% 
-  left_join(first_case) %>% 
-  group_by(alpha.3) %>% 
-  filter((date >= first_case + months(1)) & date < first_case + months(4)) %>% 
-  summarise(avg_stringency_1_4 = mean(stringency, na.rm = TRUE))
-avg_stringency <- stringency %>% 
-  left_join(first_case) %>% 
-  group_by(alpha.3) %>% 
-  filter((date >= first_case + months(0)) & date < first_case + months(6)) %>% 
-  summarise(avg_stringency_6 = mean(stringency, na.rm = TRUE)) %>% 
-  full_join(avg_stringency2) %>% 
-  full_join(avg_stringency3)
-
-
-mobility_raw <- read_csv("Raw/Global_Mobility_Report.csv")
-data_alpha.3 <- country_iso %>% 
-  select(name, alpha.3) %>% 
-  rename(location = name)
-mobility <- mobility_raw %>% 
-  group_by(country_region, date) %>% 
-  summarise(country_region_code, res_pct_chng = mean(residential_percent_change_from_baseline, na.rm = TRUE)) %>% 
-  distinct() %>% 
-  rename(location = country_region) %>% 
-  select(-country_region_code)
-avg_mobility_6 <- mobility %>%
-  left_join(data_alpha.3) %>% 
-  left_join(first_case) %>% 
-  group_by(location) %>% 
-  filter((date >= first_case) & date < first_case + months(6)) %>% 
-  summarise(avg_res_chng_6 = mean(res_pct_chng, na.rm = TRUE))
-  
+# first_case <- covid_raw %>% 
+#   select(iso_code, date, total_cases, total_cases_per_million, total_tests_per_thousand) %>% 
+#   rename(alpha.3 = iso_code) %>% 
+#   filter(!total_cases == 0) %>% 
+#   group_by(alpha.3) %>% 
+#   filter(date == min(date)) %>% 
+#   select(alpha.3, date) %>% 
+#   rename(first_case = date) %>% 
+#   ungroup()
+# 
+# stringency_raw <- read_xlsx("Raw/OxCGRT_timeseries_all.xlsx")
+# stringency <- stringency_raw %>% 
+#   gather(key = "date", value = "stringency", -country_code, -country_name) %>% 
+#   mutate(date = dmy(date)) %>% 
+#   `colnames<-`(c("alpha.3", "location", "date", "stringency"))
+# avg_stringency3 <- stringency %>% 
+#   left_join(first_case) %>% 
+#   group_by(alpha.3) %>% 
+#   filter(date >= first_case) %>% 
+#   summarise(avg_stringency = mean(stringency, na.rm = TRUE))
+# avg_stringency2 <- stringency %>% 
+#   left_join(first_case) %>% 
+#   group_by(alpha.3) %>% 
+#   filter((date >= first_case + months(1)) & date < first_case + months(4)) %>% 
+#   summarise(avg_stringency_1_4 = mean(stringency, na.rm = TRUE))
+# avg_stringency <- stringency %>% 
+#   left_join(first_case) %>% 
+#   group_by(alpha.3) %>% 
+#   filter((date >= first_case + months(0)) & date < first_case + months(6)) %>% 
+#   summarise(avg_stringency_6 = mean(stringency, na.rm = TRUE)) %>% 
+#   full_join(avg_stringency2) %>% 
+#   full_join(avg_stringency3)
+# 
+# 
+# mobility_raw <- read_csv("Raw/Global_Mobility_Report.csv")
+# data_alpha.3 <- country_iso %>% 
+#   select(name, alpha.3) %>% 
+#   rename(location = name)
+# mobility <- mobility_raw %>% 
+#   group_by(country_region, date) %>% 
+#   summarise(country_region_code, res_pct_chng = mean(residential_percent_change_from_baseline, na.rm = TRUE)) %>% 
+#   distinct() %>% 
+#   rename(location = country_region) %>% 
+#   select(-country_region_code)
+# avg_mobility_6 <- mobility %>%
+#   left_join(data_alpha.3) %>% 
+#   left_join(first_case) %>% 
+#   group_by(location) %>% 
+#   filter((date >= first_case) & date < first_case + months(6)) %>% 
+#   summarise(avg_res_chng_6 = mean(res_pct_chng, na.rm = TRUE))
+#   
 
 
 
@@ -220,16 +221,6 @@ group <- sub %>%
   summarise_all(mean, na.rm = T) %>% 
   # summarise(across(state_of_health:V001, ~ mean(.x, na.rm = TRUE))) %>% 
   unique()
-group %>% 
-  ggplot(aes(democracy_index, total_cases_per_million)) +
-  geom_point() +
-  geom_smooth(method = lm)
-
-group %>% 
-  lm(total_cases_per_million ~ distrust_people + gdp_per_capita + aged_65_older +
-       human_development_index + ghs + ethnic + democracy_index, .) %>% 
-  screenreg()
-
 
 country <- values %>% 
   select(cntry_AN, reg_nuts1, reg_nuts2, gwght, A009, A065, A068, A165,
@@ -271,8 +262,8 @@ country <- values %>%
   left_join(life_exp, by = "location") %>% 
   full_join(health_workers, by = "location") %>% 
   left_join(covid_positive) %>% 
-  left_join(avg_stringency, by = "alpha.3") %>% 
-  left_join(avg_mobility_6) %>% 
+  # left_join(avg_stringency, by = "alpha.3") %>% 
+  # left_join(avg_mobility_6) %>% 
   distinct() 
 
 country %>% 

@@ -14,13 +14,13 @@ box::use(dplyr[...],
          lubridate[date, as_date],
          magrittr[use_series, extract],
          readr[read_csv],
-         # import own project functions
-         functions/ts[...],
-         functions/ap[...],
          shinycssloaders[withSpinner],
          rgdal[readOGR],
          broom[tidy],
-         tidyr[pivot_wider, unnest])
+         tidyr[pivot_wider, unnest],
+         # import own project functions
+         functions/ts[...],
+         functions/ap[...])
 
 # imports data for the project (function defined in functions/ts.r)
 load_project_data()
@@ -192,7 +192,7 @@ server <- function(input, output) {
             labs(title = "Multicolinearity")
     })
     output$linearity <- renderPlot({
-        plot_linearity(rval$lmer_model)
+        plot.merMod(rval$lmer_model)
     })
 }
 

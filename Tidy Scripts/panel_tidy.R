@@ -66,10 +66,6 @@ covid <- covid_raw %>%
   select(location, date, total_cases, new_cases, new_cases_per_million, total_deaths, new_deaths,
          new_deaths_per_million, total_deaths_per_million, total_cases_per_million)
 
-covid %>% 
-  arrange(date) %>% 
-  pull(date) %>% 
-  unique()
 
 data <- stringency %>% 
   left_join(mobility, by = c("location", "date")) %>% 

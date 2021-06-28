@@ -60,11 +60,48 @@ plot_linearity <- function(model) {
 #' @export
 plot_homogeneity <- function(model) {
   box::use(dplyr[...],
-           HLMdiag[pull_resid])
+           HLMdiag[pull_resid],
+           ggplot2[...],
+           stats[fitted])
   tibble(fitted = fitted(model), 
          std.resid = pull_resid(model, standardize = TRUE, type = "eb")) %>% 
-    ggplot(aes(fitted, sqrt(Mod(std.resid)))) +
-    geom_point(colour = "#01468B") +
-    geom_smooth(colour = "#42B540") +
-    labs(x = "Fitted Values")
+    ggplot(aes(fitted, std.resid)) + # sqrt(Mod(std.resid))
+    geom_point(colour = "#01468B", alpha = 0.3) +
+    geom_hline(yintercept = 0, colour = "#42B540", linetype = "dashed", size = 1) +
+    # geom_smooth(colour = "#42B540") +
+    labs(x = "Fitted Values", y = "Standardised Residuals")
 }
+
+#' @export
+plot_cooks_distance <- function(model) {
+  box::use(dplyr[...],
+           ggplot2[ggplot, aes, geom_point],
+           HLMdiag[pull_resid],
+           influence.ME[influence, cooks.distance.estex],
+           stats[hatvalues])
+  inf <- influence(model, group = "location")
+  cd_df <- cooks.distance.estex(inf) %>% 
+    as_tibble(rownames = "location") %>% 
+    `colnames<-`(c("location", "cooks_distance")) %>% 
+    arrange(desc(cooks_distance))
+  tibble(leverage = hatvalues(model), 
+         std.resid = pull_resid(model, standardize = TRUE, type = "eb")) %>% 
+    ggplot(aes(leverage, std.resid)) +
+    geom_point()
+}
+
+#' @export
+plot.merMod = plot_homogeneity
+
+#' @export
+plot.lme = plot_homogeneity
+
+
+
+
+
+
+
+
+
+

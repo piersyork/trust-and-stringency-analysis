@@ -117,7 +117,7 @@ data %>%
 
 
 pool <- data %>% 
-  filter(!location == "Nicaragua") %>%
+  # filter(!location == "Nicaragua") %>%
   plot_summarised(distrust_people, stringency_index)
 
 plotly::ggplotly()
