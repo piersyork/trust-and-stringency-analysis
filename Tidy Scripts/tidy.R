@@ -3,7 +3,8 @@ box::use(dplyr[...],
          readr[read_csv, cols, write_csv],
          readxl[read_xlsx, read_xls],
          tidyr[gather],
-         lubridate[date, dmy])
+         lubridate[date, dmy],
+         ggplot2[...])
 not_all_na <- function(x) any(!is.na(x))
 
 covid_raw <- read_csv("Raw/owid-covid-data.csv", col_types = cols(.default = "d", 
@@ -90,6 +91,25 @@ values %>%
   summarise(distrust = mean(A165, na.rm = TRUE)) %>% 
   na.omit() %>% 
   pull(cntry_AN)
+colnames(values) %>% grep("X001", ., value = TRUE)
+female_distrust <- values %>% 
+  as_tibble() %>% 
+  select(cntry_AN, A165, X001) %>% 
+  filter(X001 == 2) %>% 
+  group_by(cntry_AN) %>% 
+  summarise(female_distrust = mean(A165, na.rm = TRUE) - 1)
+distrust <- values %>% 
+  as_tibble() %>% 
+  select(cntry_AN, A165, X001) %>% 
+  filter(X001 == 1) %>% 
+  group_by(cntry_AN) %>% 
+  summarise(male_distrust = mean(A165, na.rm = TRUE) - 1) %>% 
+  left_join(female_distrust)
+
+distrust %>% 
+  ggplot(aes(male_distrust, female_distrust)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, colour = "blue", size = 1)
 
 ghs <- read_csv("Raw/ghs.csv")
 democracy <- read_csv("Raw/democracy_index.csv")

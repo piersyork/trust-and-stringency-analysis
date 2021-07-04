@@ -3,7 +3,7 @@ library(shiny)
 options(box.path = getwd())
 
 box::use(dplyr[...],
-         lme4[lmer, isSingular],
+         lme4[lmer, isSingular, fixef],
          texreg[screenreg, htmlreg],
          plm[plm],
          sandwich[vcovCL, vcovHC],
@@ -72,7 +72,8 @@ ui <- fluidPage(
                          tableOutput("sample_table")),
                 tabPanel("Assumptions", 
                          plotOutput("colin") %>% withSpinner(),
-                         plotOutput("linearity") %>% withSpinner())
+                         plotOutput("linearity") %>% withSpinner(),
+                         plotOutput("cooks"))
                          
             )
            
@@ -193,6 +194,10 @@ server <- function(input, output) {
     })
     output$linearity <- renderPlot({
         plot.merMod(rval$lmer_model)
+    })
+    
+    output$cooks <- renderPlot({
+        plot_cooks_distance(rval$lmer_model)
     })
 }
 

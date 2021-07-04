@@ -1,6 +1,6 @@
 options(box.path = getwd())
 box::use(dplyr[...],
-         lme4[lmer, isSingular],
+         lme4[lmer, isSingular, fixef],
          texreg[screenreg, htmlreg],
          plm[plm],
          sandwich[vcovCL, vcovHC],
@@ -10,24 +10,36 @@ box::use(dplyr[...],
          broom[tidy],
          magrittr[use_series, extract],
          ggsci[scale_fill_lancet],
-         influence.ME[influence, cooks.distance.estex],
+         influence.ME[influence, cooks.distance.estex, dfbetas.estex, sigtest],
          # import own project functions
          functions/ts[...], functions/ap[...])
 
 load_project_data()
 
 form <- stringency_index ~ distrust_people + conf_govt + ghs + ethnic +
-  democracy_index + pop.km2 + log_gdp + log_conflict + deaths_per_mil_lag_5 +
+  regime_type + continent + pop.km2 + log_gdp + log_conflict + deaths_per_mil_lag_5 +
   (1 | location)
 
 model <- lmer(update(form, ~ .), data)
-
+summary(model)
 
 inf <- influence(model, group = "location")
 cd_df <- cooks.distance.estex(inf) %>% 
   as_tibble(rownames = "location") %>% 
   `colnames<-`(c("location", "cooks_distance")) %>% 
   arrange(desc(cooks_distance))
+dfbetas.estex(inf) %>% 
+  as_tibble(rownames = "location") %>% 
+  select(location, distrust_people) %>% 
+  mutate(. ,mod_distrust_people = Mod(distrust_people),
+         influence = ifelse(mod_distrust_people > 2/sqrt(nrow(.)), "high", "low")) %>% 
+  arrange(desc(mod_distrust_people)) %>% 
+  select(-mod_distrust_people)
+sigtest(inf)$distrust_people %>% 
+  as_tibble(rownames = "location") %>% 
+  arrange(Altered.Teststat)
+
+
 
 most_locat <- head(cd_df, 10) %>% pull(location)
 
@@ -64,7 +76,34 @@ map_tidy %>%
   theme(plot.title = element_text(hjust = 0.05), 
         plot.tag.position = c(0.95, 1), plot.tag = element_text(size = 10))
 
-plotly::ggplotly()
+# using ggplot maps instead
+world <- map_data("world") %>%
+  # select(lon = long, lat, group, region) %>%
+  filter(region != "Antarctica")
+
+# world$region %>% unique() %>% grep("congo", ., value = TRUE, ignore.case = TRUE)
+# data$Entity %>% unique() %>% grep("congo", ., value = TRUE, ignore.case = TRUE)
+
+world$region <- recode(world$region,
+                       "USA" = "United States",
+                       "UK" = "United Kingdom",
+                       "Republic of Congo" = "Congo",
+                       "Democratic Republic of the Congo" = "Democratic Republic of Congo",
+                       "Ivory Coast" = "Cote d'Ivoire")
+
+world %>% 
+  left_join(cd_df, by = c("region" = "location")) %>% 
+  ggplot(aes(x = long, y = lat, group = group, fill = cooks_distance, label = region)) +
+  geom_polygon(show.legend = FALSE, color = "grey", size = 0.1) + #
+  scale_fill_continuous(high = "#01468B", low = "white", na.value = "white") + #3182bd
+  # scale_fill_distiller(direction = 1, na.value = "white") +
+  coord_equal() +
+  theme_void() +
+  theme(plot.title = element_text(hjust = 0.05), 
+        plot.tag.position = c(0.95, 1), plot.tag = element_text(size = 10))
+  
+
+
 tibble(leverage = hatvalues(model2), 
        std.resid = HLMdiag::pull_resid(model2, standardize = TRUE, type = "eb")) %>% 
   ggplot(aes(leverage, std.resid)) +
@@ -73,17 +112,20 @@ tibble(leverage = hatvalues(model2),
 plot_cooks_distance(model)
 
 cd_df %>% 
-  mutate(high = ifelse(cooks_distance >= mean(cd_df$cooks_distance)*3, "yes", "no")) %>% 
+  mutate(high = ifelse(cooks_distance >= mean(cd_df$cooks_distance)*3, "high", "low")) %>% 
   ggplot(aes(forcats::fct_reorder(location, cooks_distance), cooks_distance, 
-             fill = high)) +
-  geom_col() +
+             fill = factor(high, c("low", "high")))) +
+  geom_col(width = 0.7, show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 1)) +
-  scale_fill_lancet()
+  scale_fill_lancet() +
+  labs(x = "", fill = "", caption = "Red indicates a high cook's distance (three time the mean).")
 
 
+cd_df %>% 
+  ggplot(aes(cooks_distance)) +
+  geom_histogram()
 
-
-
+influence.ME::influence()
 
 summary(cd_df$cooks_distance)
 

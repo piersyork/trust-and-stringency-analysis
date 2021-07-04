@@ -292,10 +292,14 @@ data %>%
 
 ## trust effect on res_chng 
 data %>% 
-  lmer(res_pct_chng ~ distrust_people + continent + deaths_per_mil_lag_7 + stringency_index +
-         log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
+  lmer(trans_pct_chng ~ distrust_people + deaths_per_mil_lag_7 + stringency_index_lag_7 +
+         log(gdp_per_capita) + ghs + pop.km2 + regime_type + ethnic + education_index +
          (1 | location), .) %>% 
   screenreg()
+gc_trans <- data %>% 
+  get_coefs(trans_pct_chng ~ distrust_people + conf_govt + deaths_per_mil_lag_7 + stringency_index_lag_7 +
+              log(gdp_per_capita) + ghs + pop.km2 + regime_type + ethnic + education_index + conflict_index,
+            n_days = 1, method = "lm")
 
 data %>% 
   plm(res_pct_chng ~ distrust_people + continent + deaths_per_mil_lag_7 + 

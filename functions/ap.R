@@ -78,7 +78,8 @@ plot_cooks_distance <- function(model) {
            ggplot2[ggplot, aes, geom_point],
            HLMdiag[pull_resid],
            influence.ME[influence, cooks.distance.estex],
-           stats[hatvalues])
+           stats[hatvalues],
+           lme4[fixef])
   inf <- influence(model, group = "location")
   cd_df <- cooks.distance.estex(inf) %>% 
     as_tibble(rownames = "location") %>% 

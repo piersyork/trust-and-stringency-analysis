@@ -109,6 +109,8 @@ data_2 %>%
   geom_point(alpha = 0.3) +
   geom_smooth(method = lm)
 
+plot_cooks_distance(model)
+
 
 
 
