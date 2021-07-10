@@ -6,29 +6,34 @@ box::use(dplyr[...],
          sandwich[vcovCL, vcovHC],
          lmtest[coeftest],
          ggplot2[...],
+         forcats[fct_reorder],
          rgdal[readOGR],
          broom[tidy],
          magrittr[use_series, extract],
          ggsci[scale_fill_lancet],
-         influence.ME[influence, cooks.distance.estex, dfbetas.estex, sigtest],
+         influence.ME[influence, cooks.distance.estex, dfbetas.estex, sigtest, plot.estex],
          # import own project functions
          functions/ts[...], functions/ap[...])
 
 load_project_data()
 
-form <- stringency_index ~ distrust_people + conf_govt + ghs + ethnic +
-  regime_type + continent + pop.km2 + log_gdp + log_conflict + deaths_per_mil_lag_5 +
+form <- stringency_index ~ distrust_people + conf_govt + ghs + ethnic + pop.km2 + gdp_growth + education_index + 
+  log_gdp + log_conflict + deaths_per_mil_lag_5 + democracy_index_2 + 
   (1 | location)
 
-model <- lmer(update(form, ~ .), data)
-summary(model)
+model <- lmer(form, data)
+screenreg(model)
+model_les_nic <- lmer(form, data %>% filter(location != "Guatemala"))
+screenreg(list(model, model_les_nic))
 
 inf <- influence(model, group = "location")
 cd_df <- cooks.distance.estex(inf) %>% 
   as_tibble(rownames = "location") %>% 
   `colnames<-`(c("location", "cooks_distance")) %>% 
-  arrange(desc(cooks_distance))
-dfbetas.estex(inf) %>% 
+  arrange(desc(cooks_distance)) %>% 
+  mutate(., influence = ifelse(cooks_distance > 4/nrow(.), "high", "low")) 
+
+dfb <- dfbetas.estex(inf) %>% 
   as_tibble(rownames = "location") %>% 
   select(location, distrust_people) %>% 
   mutate(. ,mod_distrust_people = Mod(distrust_people),
@@ -39,7 +44,22 @@ sigtest(inf)$distrust_people %>%
   as_tibble(rownames = "location") %>% 
   arrange(Altered.Teststat)
 
-
+plot(inf, "dfbetas", parameters = "distrust_people", sort = TRUE, to.sort = "distrust_people")
+dfb %>% 
+  ggplot(aes(distrust_people, 
+             fct_reorder(location, distrust_people), 
+             colour = factor(influence, levels = c("low", "high")))) +
+  geom_point() +
+  geom_vline(xintercept = 0) +
+  ggsci::scale_colour_lancet() +
+  labs(colour = "", y = "", x = "DFBETAS") +
+  theme_minimal() +
+  theme(legend.position = "top")
+cd_df %>% 
+  ggplot(aes(cooks_distance, 
+             fct_reorder(location, cooks_distance), 
+             colour = influence)) +
+  geom_point()
 
 most_locat <- head(cd_df, 10) %>% pull(location)
 
