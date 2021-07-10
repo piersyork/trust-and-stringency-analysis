@@ -131,7 +131,8 @@ load_project_data = function() {
            stringency_index_lag_2 = lag(stringency_index, 2),
            stringency_index_lag_4 = lag(stringency_index, 4),
            stringency_index_lag_7 = lag(stringency_index, 7),
-           max_stringency = max(stringency_index, na.rm = TRUE)) %>% 
+           max_stringency = max(stringency_index, na.rm = TRUE),
+           democracy_index_2 = democracy_index^2) %>% 
     ungroup() %>%  
     mutate(trusting = ifelse(distrust_people < stats::median(distrust_people), "High trust", "Low trust"),
            distrust_people = distrust_people * 100,
