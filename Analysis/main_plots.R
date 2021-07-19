@@ -8,7 +8,7 @@ load_project_data()
 
 # Set theme
 my_theme <- theme_minimal() +
-  theme(legend.position = "top",
+  theme(legend.position = "top", legend.title = element_blank(),
         axis.line.x = element_line(), axis.ticks.x = element_line(),
         plot.caption = element_text(hjust = 0))
 
@@ -194,7 +194,10 @@ data %>%
   geom_smooth(method = lm)
 
   
-
+data %>% 
+  filter(location %in% c("Denmark", "Albania")) %>% 
+  ggplot(aes(date, stringency_index, colour = location)) +
+  geom_line()
 
 
 
