@@ -10,6 +10,11 @@ covid_raw <- read_csv("Raw/owid-covid-data.csv", col_types = cols(.default = "d"
                                                                   location = "c"))
 country_data_all <- read_csv("Data/country_data.csv")
 
+polity <- readxl::read_xls("Raw/p5v2018.xls") %>% 
+  filter(year == 2017) %>% 
+  select(location = country, polity2)
+
+
 education <- read_csv("Raw/education_index.csv") %>% 
   group_by(country) %>% 
   filter(year == max(year)) %>% 
@@ -29,12 +34,13 @@ world_bank <- read_csv("Raw/world_bank_indicators.csv") %>%
 
 
 country_data <- country_data_all %>% 
-  select(location, distrust_people, conf_govt, gdp_per_capita,  
+  select(location, alpha.3, distrust_people, conf_govt, gdp_per_capita,  
          ghs, ethnic, democracy_index, regime_type, pop.km2, sch_enrol_per_cap,
          gdp_growth, health_spending_pct_gdp, continent) %>% 
   distinct() %>% 
   left_join(education, by = c("location" = "country")) %>% 
-  left_join(conflict, by = c("location" = "country"))
+  left_join(conflict, by = c("location" = "country")) %>% 
+  left_join(polity)
 
 country_data %>% 
   select(location, distrust_people, education_index, conflict_index) %>% 
@@ -70,10 +76,13 @@ covid <- covid_raw %>%
 data <- stringency %>% 
   left_join(mobility, by = c("location", "date")) %>% 
   left_join(covid, by = c("location", "date")) %>% 
-  left_join(country_data, by = c("location")) 
+  left_join(country_data, by = c("alpha.3", "location")) 
 
 save(data, file = "Data/panel_data.Rdata")
 
-
+data %>% 
+  select(location, distrust_people, polity2) %>% 
+  distinct() %>% 
+  na.omit()
 
 

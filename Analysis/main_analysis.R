@@ -49,69 +49,62 @@ screenreg(modelFixed)
 
 # simple random effects model
 model1 <- data %>% 
-  lmer(stringency_index ~ distrust_people +
-         (1 | location), .)
+  lmer(stringency_index ~ distrust_people + (1 | location), .)
 screenreg(model1)
 
-# adding deaths lag to random effects
+# adding economic indicators
 model2 <- data %>% 
-  lmer(stringency_index ~ distrust_people + deaths_per_mil_lag_7 + 
+  lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
          (1 | location), .)
 screenreg(model2)
 
-# adding res_pct_chng with 28 days of lag
+# adding ghs (pandemic preparedness)
 model3 <- data %>% 
-  lmer(stringency_index ~ distrust_people + deaths_per_mil_lag_7 + res_chng_lag_34 +
-         log(gdp_per_capita) +
-         (1 | location), .)
+  lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+         ghs + (1 | location), .)
 screenreg(model3)
 
-# adding other country fixed variables
+# adding cultural
 model4 <- data %>% 
-  lmer(stringency_index ~ distrust_people + res_chng_lag_34 + deaths_per_mil_lag_7 +
-         log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
-         (1 | location), .)
+  lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+         ghs + ethnic + pop.km2 + polity2 + (1 | location), .)
 screenreg(model4)
 
-# add lagged stringency to right hand side of formula
+# add conflict
 model5 <- data %>% 
-  lmer(stringency_index ~ distrust_people + continent + res_chng_lag_34 + deaths_per_mil_lag_7 +
-         log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
-         stringency_index_lag_1 +
-         (1 | location), .)
+  lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+         ghs + ethnic + pop.km2 + polity2 + log_conflict + (1 | location), .)
 screenreg(model5)
 
-# no res chng
+# include conf_govt
 model6 <- data %>% 
-  lmer(stringency_index ~ distrust_people + continent + deaths_per_mil_lag_5 +
-         log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
+  lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+         ghs + ethnic + pop.km2 + polity2 + log_conflict + conf_govt + 
          (1 | location), .)
 screenreg(model6)
 
-# including almost all variables and playing around with logged vars. Exclude Nicaragua because outlier?
+# inlcude lag_deaths
 model7 <- data %>% 
-  # filter(!location == "Nicaragua") %>%
-  lmer(stringency_index ~ distrust_people + deaths_per_mil_lag_5 + conf_govt + 
-         log(conflict_index) + continent +
-         log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
-         (1 | location), .)
+  lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+         ghs + ethnic + pop.km2 + polity2 + log_conflict + conf_govt + 
+         deaths_per_mil_lag_5 + (1 | location), .)
 screenreg(model7)
 
-# include total deaths
+screenreg(list(model1, model2, model3, model4, model5, model6, model7))
+
+
+# include transport change
 model8 <- data %>% 
-  # filter(!location == "Nicaragua") %>%
-  lmer(stringency_index ~ distrust_people + conf_govt + total_deaths_per_million +
-         log(conflict_index) + continent + deaths_per_mil_lag_5 + regime_type +
-         log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
-         (1 | location), .)
+  lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+         ghs + ethnic + pop.km2 + polity2 + log_conflict + conf_govt + 
+         deaths_per_mil_lag_5 + trans_chng_lag_28 + (1 | location), .)
 screenreg(model8)
 
 model10 <- data %>% 
-  lmer(stringency_index ~ distrust_people*continent + conf_govt + total_deaths_per_million +
-         log_conflict + continent + deaths_per_mil_lag_5 + regime_type + gdp_growth +
-         log_gdp + ghs + pop.km2 + democracy_index + ethnic + education_index +
-         (1 | location), .)
-screenreg(list(model8, model10))
+  lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+         ghs + ethnic + pop.km2 + polity2 + log_conflict + conf_govt + 
+         deaths_per_mil_lag_5 + (1 | continent) + (1 | location), .)
+screenreg(list(model7, model10))
 
 methods(class = "merMod")
 
@@ -385,3 +378,5 @@ data %>%
   table()
 
 
+model = lmer(stringency_index ~ distrust_people + log_gdp + polity2 + (1 | location), data)
+plot_cooks_distance(model)

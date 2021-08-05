@@ -10,12 +10,14 @@ box::use(dplyr[...],
 
 load_project_data()
 
+.formula <- stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+         ghs + ethnic + pop.km2 + polity2 + log_conflict + conf_govt + deaths_per_mil_lag_5 +
+         (1 | location)
+
+
 # how the effect of distrust changes over time (get_coefs is defined in functions/ts.r)
 lmer_time <- data %>% 
-  get_coefs(stringency_index ~ distrust_people + conf_govt + total_deaths_per_million +
-              conflict_index + continent + deaths_per_mil_lag_5 +
-              log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
-              (1 | location), n_days = 7, start = "2020-04-01")
+  get_coefs(.formula, method = "lmer", n_days = 28, start = "2020-04-01")
 
 lmer_time$df %>% 
   ggplot(aes(date_start, nobs)) +
@@ -24,13 +26,13 @@ lmer_time$df %>%
 # same but with the coef on deaths lag. coef_position determines which coef to plot
 lmer_time_deaths <- data %>% 
   get_coefs(stringency_index ~ distrust_people + res_chng_lag_34 + deaths_per_mil_lag_7 +
-              log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
+              log(gdp_per_capita) + ghs + pop.km2 + polity2 + ethnic + education_index +
               (1 | location), n_days = 14, coef_position = 4)
 
 # coef on distrust in a OLS model over time
 form <- stringency_index ~ distrust_people + conf_govt + total_deaths_per_million +
   conflict_index + continent + deaths_per_mil_lag_5 +
-  log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index
+  log(gdp_per_capita) + ghs + pop.km2 + polity2 + ethnic + education_index
 
 lm_time <- data %>% 
   get_coefs(form, n_days = 1, method = "lm", coef_position = 2, start = "2020-04-01")
@@ -57,44 +59,44 @@ data %>%
 # same but for deaths coef
 lm_time_deaths <- data %>% 
   get_coefs(stringency_index ~ distrust_people + res_chng_lag_34 + deaths_per_mil_lag_7 +
-              log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index,
+              log(gdp_per_capita) + ghs + pop.km2 + polity2 + ethnic + education_index,
             n_days = 1, method = "lm", coef_position = 4)
 
 # playing around with more model specs
 data %>% 
   lmer(stringency_index ~ distrust_people + log(gdp_per_capita) + sch_enrol_per_cap +
-         deaths_per_mil_lag_7 + res_chng_lag_7 + ghs + pop.km2 + democracy_index + ethnic +
+         deaths_per_mil_lag_7 + res_chng_lag_7 + ghs + pop.km2 + polity2 + ethnic +
          (1 | location), .) %>% 
   screenreg()
 
 data %>%
   lmer(rtl_pct_chng ~ distrust_people + stringency_index + deaths_per_mil_lag_7 +
-         log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic +
+         log(gdp_per_capita) + ghs + pop.km2 + polity2 + ethnic +
          (1 | location), .) %>% 
   screenreg()
 
 # modeling the effect of distrust on res_chng over time
 rpc_time <- data %>% 
   get_coefs(res_pct_chng ~ distrust_people + stringency_index + deaths_per_mil_lag_7 +
-              log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic +
+              log(gdp_per_capita) + ghs + pop.km2 + polity2 + ethnic +
               (1 | location), n_days = 7, coef_position = 2)
 
 rpc_lm <- data %>% 
   get_coefs(res_pct_chng ~ distrust_people + stringency_index_lag_7 + deaths_per_mil_lag_7 +
-              log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic,
+              log(gdp_per_capita) + ghs + pop.km2 + polity2 + ethnic,
             n_days = 1, method = "lm", coef_position = 2, start = "2020-03-01")
 
 
 # effect of distrust on deaths
 deaths_lm <- data %>% 
   get_coefs(new_deaths_per_million ~ distrust_people + stringency_index + 
-              log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic,
+              log(gdp_per_capita) + ghs + pop.km2 + polity2 + ethnic,
             n_days = 1, method = "lm", coef_position = 2, start = "2020-03-01")
 
 # in random effects
 ef_death <- data %>% 
   get_coefs(new_deaths_per_million ~ distrust_people + stringency_index_lag_7 + 
-              log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic +
+              log(gdp_per_capita) + ghs + pop.km2 + polity2 + ethnic +
               (1 | location),
             n_days = 7, method = "lmer", coef_position = 2, start = "2020-03-17")
 ef_death
@@ -104,23 +106,23 @@ ef_death
 weekly_times <- weekly_data %>% 
   get_coefs(stringency_index ~ distrust_people + excess_lag_1 +
               log(gdp_per_capita) + ghs + pop.km2 + 
-              democracy_index + ethnic + 
+              polity2 + ethnic + 
               (1 | location), n_days = 14)
 weekly_times_lm <- weekly_data %>% 
   get_coefs(stringency_index ~ distrust_people + excess_lag_1 +
               log(gdp_per_capita) + ghs + pop.km2 + 
-              democracy_index + ethnic,
+              polity2 + ethnic,
             n_days = 7, method = "lm")
 
 weekly_data %>% 
   get_coefs(excess_deaths_per_100k ~ distrust_people + stringency_index + 
-              log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic,
+              log(gdp_per_capita) + ghs + pop.km2 + polity2 + ethnic,
             n_days = 7, method = "lmer", coef_position = 2)
 
 str_str <- data %>% 
   get_coefs(stringency_index ~ distrust_people + log(gdp_per_capita) + education_index +
               deaths_per_mil_lag_7 + res_chng_lag_7 + 
-              ghs + pop.km2 + democracy_index + ethnic +
+              ghs + pop.km2 + polity2 + ethnic +
               (1 | location), n_days = 7)
 
 
@@ -134,7 +136,7 @@ rob
 ## measuring effect of confidence in government
 conf_form <- stringency_index ~ conf_govt + deaths_per_mil_lag_7 + 
   distrust_people + conflict_index + log(gdp_per_capita) + ghs + 
-  pop.km2 + democracy_index + ethnic + sch_enrol_per_cap
+  pop.km2 + polity2 + ethnic + sch_enrol_per_cap
 
 
 lmer_conf <- data %>% 
@@ -155,12 +157,12 @@ lm_conf_res <- data %>%
 daily_coef_total <- data %>% 
   get_coefs(stringency_index ~ distrust_people + conf_govt + total_deaths_per_million +
               log(conflict_index) + continent + deaths_per_mil_lag_5 +
-              log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index,
+              log(gdp_per_capita) + ghs + pop.km2 + polity2 + ethnic + education_index,
             n_days = 1, method = "lm")
 lmer_total_d <- data %>% 
   get_coefs(stringency_index ~ distrust_people + conf_govt + total_deaths_per_million +
               log(conflict_index) + continent + deaths_per_mil_lag_5 +
-              log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
+              log(gdp_per_capita) + ghs + pop.km2 + polity2 + ethnic + education_index +
               (1 | location),
             n_days = 7)
 
@@ -168,7 +170,7 @@ lmer_total_d <- data %>%
 total_deaths <- data %>% 
   get_coefs(stringency_index ~ distrust_people + conf_govt + total_deaths_per_million +
               log(conflict_index) + continent + deaths_per_mil_lag_5 +
-              log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index,
+              log(gdp_per_capita) + ghs + pop.km2 + polity2 + ethnic + education_index,
             n_days = 1, method = "lm", coef_position = 4)
 data %>% 
   get_coefs(stringency_index ~ total_deaths_per_million, method = "lm", n_days = 1)

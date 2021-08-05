@@ -75,20 +75,25 @@ plot_homogeneity <- function(model) {
 #' @export
 plot_cooks_distance <- function(model) {
   box::use(dplyr[...],
-           ggplot2[ggplot, aes, geom_point],
+           ggplot2[ggplot, aes, geom_point, geom_col],
            HLMdiag[pull_resid],
-           influence.ME[influence, cooks.distance.estex],
+           influence.ME[...],
            stats[hatvalues],
            lme4[fixef])
   inf <- influence(model, group = "location")
-  cd_df <- cooks.distance.estex(inf) %>% 
+  influence.ME::dfbetas.estex(inf)
+  influence.ME::sigtest(inf)
+  cooks.distance.estex(inf) %>% 
     as_tibble(rownames = "location") %>% 
-    `colnames<-`(c("location", "cooks_distance")) %>% 
-    arrange(desc(cooks_distance))
-  tibble(leverage = hatvalues(model), 
-         std.resid = pull_resid(model, standardize = TRUE, type = "eb")) %>% 
-    ggplot(aes(leverage, std.resid)) +
-    geom_point()
+    left_join(as_tibble(influence.ME::sigtest(inf)$distrust_people, rownames = "location")) %>% 
+    select(location, cooks_distance = V1, is_sig = Altered.Sig) %>% 
+    arrange(desc(cooks_distance)) %>% 
+    ggplot(aes(cooks_distance, forcats::fct_reorder(location, cooks_distance))) +
+    geom_col()
+  # tibble(leverage = hatvalues(model), 
+  #        std.resid = pull_resid(model, standardize = TRUE, type = "eb")) %>% 
+  #   ggplot(aes(leverage, std.resid)) +
+  #   geom_point()
 }
 
 #' @export
@@ -97,7 +102,30 @@ plot.merMod = plot_homogeneity
 #' @export
 plot.lme = plot_homogeneity
 
-
+#' @export
+plot_dfbetas <- function(model) {
+  box::use(dplyr[...],
+           ggplot2[...],
+           HLMdiag[pull_resid],
+           influence.ME[...],
+           stats[hatvalues],
+           lme4[fixef])
+  
+  inf <- influence(model, group = "location")
+  
+  
+  dfbetas.estex(inf) %>% 
+    as_tibble(rownames = "location") %>% 
+    left_join(as_tibble(influence.ME::sigtest(inf)$distrust_people, rownames = "location")) %>% 
+    select(location, dfbetas = distrust_people, is_sig = Altered.Sig) %>% 
+    arrange(desc(dfbetas)) %>% 
+    ggplot(aes(dfbetas, forcats::fct_reorder(location, dfbetas), fill = is_sig)) +
+    geom_col(show.legend = FALSE) +
+    scale_fill_manual(values = c("FALSE" = "#ED2201", "TRUE" = "#42B540")) +
+    labs(title = "DFBETAS", x = "", y = "", fill = "Is Significant", 
+         caption = "Note: Green indicates that without that location the model coefficient is significant, \nred indicates that it is insignificant.") +
+    theme(legend.position = "bottom")
+}
 
 
 

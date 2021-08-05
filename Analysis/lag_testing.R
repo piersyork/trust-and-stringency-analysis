@@ -10,33 +10,27 @@ box::use(dplyr[...],
 
 load_project_data()
 
+.formula <- stringency_index ~ distrust_people + conf_govt + ghs + ethnic + pop.km2 + gdp_growth + 
+  log_gdp + log_conflict + deaths_per_mil_lag_5 + polity2 + education_index +
+  (1 | location)
+
 lag_df <- data %>% 
-  test_lag(stringency_index ~ distrust_people + log(gdp_per_capita) + deaths_per_mil_lag_7 +
-             education_index + ghs + pop.km2 + democracy_index + 
-             (1 | location), lag_var = res_pct_chng, n_lag = 50)
+  test_lag(update(.formula, ~ . - deaths_per_mil_lag_5), lag_var = trans_pct_chng, n_lag = 50)
 
 lag_df_deaths <- data %>% 
-  test_lag(stringency_index ~ distrust_people + log(gdp_per_capita) + res_chng_lag_34 +
-             education_index + ghs + pop.km2 + democracy_index + 
-             (1 | location), lag_var = new_deaths_per_million, n_lag = 30)
+  test_lag(update(.formula, ~ . - deaths_per_mil_lag_5), lag_var = new_deaths_per_million, n_lag = 30)
 
 deaths_simple <- data %>% 
   test_lag(stringency_index ~ distrust_people + (1 | location), 
            lag_var = new_deaths_per_million, n_lag = 50)
 
 res_simple <- data %>% 
-  test_lag(stringency_index ~ distrust_people + deaths_per_mil_lag_7 + 
-             (1 | location), 
-           lag_var = res_pct_chng, n_lag = 50)
+  test_lag(stringency_index ~ distrust_people + (1 | location), 
+           lag_var = trans_pct_chng, n_lag = 50)
 res2 <- data %>% 
-  test_lag(stringency_index ~ distrust_people + log(gdp_per_capita) + deaths_per_mil_lag_7 +
-             education_index + ghs + pop.km2 + democracy_index +
-             (1 | location), lag_var = res_pct_chng)
+  test_lag(update(.formula, ~ . + stringency_index_lag_1), 
+           lag_var = trans_pct_chng, n_lag = 50)
 
-trans <- data %>% 
-  test_lag(stringency_index ~ distrust_people + log(gdp_per_capita) + deaths_per_mil_lag_7 +
-             education_index + ghs + pop.km2 + democracy_index +
-             (1 | location), lag_var = trans_pct_chng)
 
 
 deaths_with_str <- data %>% 

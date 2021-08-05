@@ -127,6 +127,7 @@ load_project_data = function() {
            trans_chng_lag_28 = lag(trans_pct_chng, 28),
            trans_chng_lag_34 = lag(trans_pct_chng, 34),
            trans_chng_lag_40 = lag(trans_pct_chng, 40),
+           transport_reduction_lag_34 = trans_chng_lag_34*-1,
            stringency_index_lag_1 = lag(stringency_index, 1),
            stringency_index_lag_2 = lag(stringency_index, 2),
            stringency_index_lag_4 = lag(stringency_index, 4),

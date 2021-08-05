@@ -14,7 +14,6 @@ my_theme <- theme_minimal() +
 
 theme_set(my_theme)
 
-
 ## Main Plots:
 # plot of deaths: trusting vs untrusting
 data %>% 
@@ -110,9 +109,9 @@ data %>%
   geom_hline(yintercept = 0, colour = "grey", linetype = "dashed") +
   scale_x_date(limits = c(as_date("2020-03-01"), as_date("2021-03-01")), 
                date_breaks = "8 weeks", date_labels = "%B") +
-  labs(title = "Percent change in residential",
+  labs(title = "Percent change in transport",
        x = "", y = "", colour = "",
-       caption = "Source: Our World in Data") +
+       caption = "Source: Google Mobility Report") +
   ggsci::scale_color_lancet()
 
 
@@ -172,26 +171,16 @@ data %>%
   ggplot(aes(factor(regime_type, c("Authoritarian", "Hybrid regime",
                                    "Flawed democracy", "Full democracy")), distrust_people)) +
   geom_boxplot()
-data %>% plot_summarised(democracy_index, distrust_people, .poly = 2)
+data %>% plot_summarised(polity2, distrust_people)
 
 data %>% 
-  select(regime_type, location, distrust_people, democracy_index) %>% 
+  select(regime_type, location, distrust_people, polity2) %>% 
   na.omit() %>% 
   distinct() %>% 
-  ggplot(aes(democracy_index, distrust_people, colour = regime_type)) +
+  ggplot(aes(polity2, distrust_people, colour = regime_type)) +
   geom_point() +
   geom_smooth(method = lm)
 
-data %>% 
-  select(distrust_people, stringency_index, location, continent) %>% 
-  na.omit() %>% 
-  group_by(location) %>% 
-  summarise(distrust_people = mean(distrust_people), 
-            stringency_index = mean(stringency_index),
-            continent = continent) %>% 
-  ggplot(aes(distrust_people, stringency_index, colour = continent)) +
-  geom_point() +
-  geom_smooth(method = lm)
 
   
 data %>% 

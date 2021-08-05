@@ -1,0 +1,83 @@
+---
+title: "shiny_test"
+output: html_document
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+# import functions
+options(box.path = getwd())
+box::use(dplyr[...],
+         ggplot2[...],
+         lme4[lmer],
+         texreg[screenreg, htmlreg],
+         plm[plm],
+         sandwich[vcovCL, vcovHC],
+         lmtest[coeftest],
+         lubridate[date],
+         magrittr[use_series, extract],
+         readr[read_csv],
+         # import own project functions
+         functions/ts[get_coefs, load_project_data, test_lag])
+
+load_project_data()
+
+my_theme <- theme_minimal() +
+  theme(legend.position = "top",
+        axis.line.x = element_line(), axis.ticks.x = element_line(),
+        plot.caption = element_text(hjust = 0))
+
+theme_set(my_theme)
+```
+
+
+# Change variables included in regression here
+<details>
+  <summary>Click to change variables</summary>
+```{r echo = FALSE}
+
+all_vars <- c("deaths_per_mil_lag_5", "conf_govt", "ghs", "pop.km2", "trans_chng_lag_5",
+              "total_deaths_per_million", "stringency_index_lag_1", "stringency_index_lag_7",
+              "polity2", "ethnic", "log_gdp", "log_conflict", "gdp_growth", "education_index")
+
+selected <- c("deaths_per_mil_lag_5", "conf_govt", "ghs", "pop.km2", 
+              "polity2", "ethnic", "log_gdp", "log_conflict", "gdp_growth", "education_index")
+checkboxGroupInput("vars", "Select Variables:", all_vars, 
+                               selected = selected, width = "100%")
+
+
+
+```
+</details>
+# See model here
+
+```{r echo = FALSE}
+renderUI({
+  ind_vars <- input$vars
+        # print(ind_vars)
+  dep_var <- "stringency_index"
+  .form <- formula(paste(c(dep_var, "~", 
+                           "distrust_people +",
+                           paste(ind_vars, "+"), "distrust_people"), 
+                         collapse = " "))
+        
+  form_lmer <- update(.form, ~ . + (1 | location))
+  lmer_model <- lmer(form_lmer, data)
+  
+        
+  lm_model <- lm(.form, data) %>% 
+    coeftest(., vcovCL(., cluster = ~location))
+        
+  plm_model <- plm(.form, data, index = c("location", "date"), effect = "time") %>% 
+    coeftest(vcovHC, cluser = "group")
+        
+  htmlreg(list(lm_model, lmer_model, plm_model), 
+                custom.model.names = c("Pooled OLS", "Random Effects", "Time Fixed Effects"),
+                omit.coef = "Intercept", 
+                include.aic = FALSE, include.bic = FALSE, include.log = FALSE) %>% 
+            HTML()
+        
+})
+```

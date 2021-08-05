@@ -21,18 +21,28 @@ box::use(dplyr[...],
          # import own project functions
          functions/ts[...],
          functions/ap[...])
+library(lme4)
+library(influence.ME)
+library(sf)
+
 
 # imports data for the project (function defined in functions/ts.r)
 load_project_data()
 
+data %>% 
+    select(trans_chng_lag_34, transport_reduction_lag_34) %>% 
+    na.omit()
     
 
 # import map data
-map_data <- readOGR("Map Data/World_Countries/", "World_Countries")
+# map_data <- readOGR("Map Data/World_Countries/", "World_Countries")
+
 
 # remove Antarctica from map and tidy map data
-map_tidy <- tidy(map_data, "COUNTRY") %>% 
-    filter(!id == "Antarctica")
+# map_tidy <- tidy(map_data, "COUNTRY") %>% 
+#     filter(!id == "Antarctica")
+
+map_data <- readRDS("Map Data/map_data.rds")
 
 # Set theme
 my_theme <- theme_minimal() +
@@ -52,8 +62,8 @@ ui <- fluidPage(
         sidebarPanel(
             checkboxGroupInput("vars", "Select Variables:", colnames(data), 
                                selected = c("deaths_per_mil_lag_5", "conf_govt", "ghs", "pop.km2",
-                                            "regime_type", "ethnic", "log_gdp", "log_conflict",
-                                            "education_index", "continent")),
+                                            "polity2", "ethnic", "log_gdp", 
+                                            "log_conflict", "gdp_growth", "education_index")),
             radioButtons("interaction", "Select Interaction:",
                          c("none", "continent", "regime_type"), 
                          selected = "none")
@@ -129,7 +139,8 @@ server <- function(input, output) {
     output$formula <- renderUI({
         form_lmer <- update(rval$formula, ~ . + (1 | location))
         print(form_lmer)
-        HTML(paste0("<br/><br/><b>", form_lmer, "<b/>"))
+        form_print <- as.character(form_lmer)
+        HTML("<br/><br/><b>", form_print[2], "~", form_print[3], "<b/>")
     })
     
     output$time_plot <- renderPlot({
@@ -144,18 +155,26 @@ server <- function(input, output) {
             select(location, distrust_people, input$vars) %>% #, input$vars
             na.omit() %>% 
             group_by(location) %>% 
-            mutate(across(where(is.numeric), ~mean(.x))) %>% 
+            mutate(across(where(is.numeric), ~mean(.x)),
+                   location = recode(location,
+                                     "United States" = "United States of America",
+                                     "Serbia" = "Republic of Serbia")) %>% 
             distinct()
-        print(nrow(cntry_data))
+        # print(nrow(cntry_data))
+        # 
+        # cntry_data$location[!cntry_data$location %in% map_data$SOVEREIGNT]
+        # grep("Serbia", map_data$SOVEREIGNT, ignore.case = TRUE, value = TRUE)
+        # grep("Hong Kong", cntry_data$location, ignore.case = TRUE, value = TRUE)
         
-        map_tidy %>% 
-            left_join(cntry_data, by = c("id" = "location")) %>%
-            mutate(sample = ifelse(!is.na(distrust_people), 1, 0)) %>% 
-            ggplot(aes(x = long, y = lat, group = group, fill = factor(sample))) +
-            geom_polygon(show.legend = FALSE) + #, color = "grey", size = 0.1
+        
+        
+        map_data %>% 
+            left_join(cntry_data, by = c("SOVEREIGNT" = "location")) %>% print() %>% 
+            mutate(sample = ifelse(!is.na(distrust_people), 1, 0)) %>% print() %>% 
+            ggplot(aes(fill = factor(sample))) +
+            geom_sf(color = "black", size = 0.1, show.legend = FALSE) + #,
             scale_fill_manual(values = c("#aecae5", "#3182bd")) + 
             #scale_fill_brewer(direction = 1) +
-            coord_equal() +
             theme_void() +
             theme(plot.title = element_text(hjust = 0.05),
                   plot.tag.position = c(0.95, 1), plot.tag = element_text(size = 10))
@@ -197,8 +216,8 @@ server <- function(input, output) {
     })
     
     output$cooks <- renderPlot({
-        plot_cooks_distance(rval$lmer_model)
-    })
+        plot_dfbetas(rval$lmer_model)
+    }, height = 700)
 }
 
 # Run the application 
