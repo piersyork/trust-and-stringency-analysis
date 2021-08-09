@@ -132,8 +132,7 @@ load_project_data = function() {
            stringency_index_lag_2 = lag(stringency_index, 2),
            stringency_index_lag_4 = lag(stringency_index, 4),
            stringency_index_lag_7 = lag(stringency_index, 7),
-           max_stringency = max(stringency_index, na.rm = TRUE),
-           democracy_index_2 = democracy_index^2) %>% 
+           max_stringency = max(stringency_index, na.rm = TRUE)) %>% 
     ungroup() %>%  
     mutate(trusting = ifelse(distrust_people < stats::median(distrust_people), "High trust", "Low trust"),
            distrust_people = distrust_people * 100,
@@ -143,7 +142,9 @@ load_project_data = function() {
   weekly_data <<- read_csv("Data/weekly_data.csv") %>% 
     group_by(location) %>% 
     arrange(date) %>% 
-    mutate(excess_lag_1 = lag(excess_deaths_per_100k, 1),
+    mutate(log_gdp = log(gdp_per_capita),
+           log_conflict = log(conflict_index),
+           excess_lag_1 = lag(excess_deaths_per_100k, 1),
            excess_lag_2 = lag(excess_deaths_per_100k, 2),
            excess_lag_3 = lag(excess_deaths_per_100k, 3),
            excess_lag_4 = lag(excess_deaths_per_100k, 4),

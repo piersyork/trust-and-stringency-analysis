@@ -7,21 +7,34 @@ box::use(dplyr[...],
          ggplot2[...])
 not_all_na <- function(x) any(!is.na(x))
 
-covid_raw <- read_csv("Raw/owid-covid-data.csv", col_types = cols(.default = "d", 
-                                                                  date = "D",
-                                                                  iso_code = "c",
-                                                                  continent = "c",
-                                                                  location = "c"))
-covid_positive <- covid_raw %>% 
-  select(iso_code, date, positive_rate) %>% 
-  na.omit() %>% 
-  group_by(iso_code) %>% 
-  filter(date == max(date)) %>% 
-  rename(alpha.3 = iso_code) %>% 
-  select(-date)
+# covid_raw <- read_csv("Raw/owid-covid-data.csv", col_types = cols(.default = "d", 
+#                                                                   date = "D",
+#                                                                   iso_code = "c",
+#                                                                   continent = "c",
+#                                                                   location = "c"))
+# covid_positive <- covid_raw %>% 
+#   select(iso_code, date, positive_rate) %>% 
+#   na.omit() %>% 
+#   group_by(iso_code) %>% 
+#   filter(date == max(date)) %>% 
+#   rename(alpha.3 = iso_code) %>% 
+#   select(-date)
 
-country_iso <- read_csv("Raw/all.csv")
-colnames(country_iso) <- (tolower(make.names(colnames(country_iso))))
+country_iso <- read_csv("Raw/all.csv") %>% 
+  select(location = name, alpha.2 = `alpha-2`, alpha.3 = `alpha-3`, 
+         continent = region, sub_region = `sub-region`)
+
+country_iso <- ISOcodes::ISO_3166_1 %>% 
+  as_tibble() %>% 
+  select(location = Name, alpha.2 = Alpha_2, alpha.3 = Alpha_3, official_name = Official_name) %>% 
+  mutate(location = recode(location,
+                           "Viet Nam" = "Vietnam",
+                           "Iran, Islamic Republic of" = "Iran",
+                           "Russian Federation" = "Russia",
+                           "Taiwan, Province of China" = "Taiwan",
+                           "Korea, Republic of" = "South Korea",
+                           "Czechia" = "Czech Republic",
+                           "Bolivia, Plurinational State of" = "Bolivia"))
 
 load("Raw/WVSEVS_Joint_v1-0-0.rdata")
 
@@ -112,6 +125,8 @@ distrust %>%
   geom_abline(intercept = 0, slope = 1, colour = "blue", size = 1)
 
 ghs <- read_csv("Raw/ghs.csv")
+
+
 democracy <- read_csv("Raw/democracy_index.csv")
 democracy <- democracy %>% 
   mutate(location = gsub(pattern = "^\\s", replacement = "", x = location),
@@ -130,23 +145,23 @@ density <- density %>%
          location = gsub(pattern = "^\\s", replacement = "", x = location)) %>% 
   select(location, area_km2, pop.km2)
 
-
-covid <- covid_raw %>% 
-  rename(alpha.3 = iso_code) %>% 
-  group_by(alpha.3) %>% 
-  filter(date == max(date)) %>% 
-  select(alpha.3, continent, location, total_cases_per_million, total_deaths_per_million,
-         aged_65_older, gdp_per_capita, extreme_poverty, human_development_index, 
-         median_age) %>% 
-  right_join(country_iso[,2:4]) %>% 
-  rename(cntry_AN = alpha.2)
-
-covid_test <- covid_raw %>% 
-  rename(alpha.3 = iso_code) %>% 
-  group_by(alpha.3) %>% 
-  select(total_tests, total_tests_per_thousand, total_vaccinations) %>% 
-  summarise(across(everything(), max, na.rm = TRUE)) %>% 
-  mutate(across(total_tests:total_vaccinations, ~ ifelse(. == -Inf, NA, .)))
+country_iso$location[!country_iso$location %in% ethnic$location]
+# covid <- covid_raw %>% 
+#   rename(alpha.3 = iso_code) %>% 
+#   group_by(alpha.3) %>% 
+#   filter(date == max(date)) %>% 
+#   select(alpha.3, continent, location, total_cases_per_million, total_deaths_per_million,
+#          aged_65_older, gdp_per_capita, extreme_poverty, human_development_index, 
+#          median_age) %>% 
+#   right_join(country_iso[,2:4]) %>% 
+#   rename(cntry_AN = alpha.2)
+# 
+# covid_test <- covid_raw %>% 
+#   rename(alpha.3 = iso_code) %>% 
+#   group_by(alpha.3) %>% 
+#   select(total_tests, total_tests_per_thousand, total_vaccinations) %>% 
+#   summarise(across(everything(), max, na.rm = TRUE)) %>% 
+#   mutate(across(total_tests:total_vaccinations, ~ ifelse(. == -Inf, NA, .)))
   
 
 # first_case <- covid_raw %>% 
@@ -224,23 +239,32 @@ sub <- values %>%
          govt_surveilence = H009,
          sex = X001,
          age = X003) %>%
-  right_join(covid, by = "cntry_AN") %>% 
+  # right_join(covid, by = "cntry_AN") %>% 
   mutate(distrust_people = distrust_people - 1) %>% 
+  right_join(country_iso, by = c("cntry_AN" = "alpha.2")) %>% 
   # mutate_at(vars(state_of_health:V001), ~ . * gwght * wght_eq1000) %>%
   right_join(ghs, by = "location") %>%
   right_join(ethnic, by = "location") %>% 
-  right_join(democracy, by = "location") %>% 
+  # right_join(democracy, by = "location") %>% 
   right_join(density, by = "location")
   
-sub %>% 
-  filter(continent == "Europe") %>% 
-  select(location, ghs, regime_type) %>% unique() 
+sub %>%
+  select(location, pop.km2) %>% 
+  distinct() %>% 
+  na.omit()
+  
+
 group <- sub %>% 
   # filter(continent == "Europe") %>%
   group_by(location) %>% 
   summarise_all(mean, na.rm = T) %>% 
   # summarise(across(state_of_health:V001, ~ mean(.x, na.rm = TRUE))) %>% 
   unique()
+
+world_bank <- read_csv("Raw/world_bank_indicators.csv") %>% 
+  group_by(alpha.3) %>% 
+  filter(year == 2019) %>% 
+  rename(gdp_per_capita = gdp_per_cap)
 
 country <- values %>% 
   select(cntry_AN, reg_nuts1, reg_nuts2, gwght, A009, A065, A068, A165,
@@ -268,23 +292,40 @@ country <- values %>%
                                conf_govt %in% 3:4 ~ 0)) %>% 
   group_by(cntry_AN) %>%  
   summarise(across(state_of_health:V001, ~ mean(. * gwght, na.rm = TRUE))) %>% 
-  right_join(covid, by = "cntry_AN") %>% 
+  left_join(country_iso, by = c("cntry_AN" = "alpha.2")) %>% 
+  # right_join(covid, by = "cntry_AN") %>% 
   left_join(ghs, by = "location") %>% 
   left_join(ethnic, by = "location") %>% 
-  left_join(democracy, by = "location") %>% 
+  # left_join(democracy, by = "location") %>% 
   left_join(density, by = "location") %>% 
-  left_join(covid_test, by = "alpha.3") %>% 
+  # left_join(covid_test, by = "alpha.3") %>% 
   left_join(countries_data, by = c("location" = "country")) %>% 
   left_join(countries_educ, by = c("location" = "country")) %>% 
-  left_join(gdp_growth, by = "location") %>% 
-  left_join(geni, by = "location") %>% 
+  # left_join(gdp_growth, by = "location") %>% 
+  # left_join(geni, by = "location") %>% 
   left_join(health_spending, by = "location") %>% 
   left_join(life_exp, by = "location") %>% 
-  full_join(health_workers, by = "location") %>% 
-  left_join(covid_positive) %>% 
+  left_join(world_bank, by = "alpha.3") %>% 
+  # full_join(health_workers, by = "location") %>% 
+  # left_join(covid_positive) %>% 
   # left_join(avg_stringency, by = "alpha.3") %>% 
   # left_join(avg_mobility_6) %>% 
   distinct() 
+
+distrust_countries <- country %>% 
+  select(location, distrust_people) %>% 
+  distinct() %>% 
+  pull(location)
+country %>% 
+  select(location, distrust_people, gdp_per_capita) %>% 
+  na.omit()
+
+distrust_countries[!distrust_countries %in% world_bank$country]
+grep("Czech", ethnic$location, value = TRUE)
+
+country %>% 
+  select(location, distrust_people, gdp_per_capita) %>% 
+  na.omit()
 
 country %>% 
   select(location, distrust_people, conf_govt) %>% 

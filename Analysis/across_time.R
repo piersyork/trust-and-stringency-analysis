@@ -17,7 +17,10 @@ load_project_data()
 
 # how the effect of distrust changes over time (get_coefs is defined in functions/ts.r)
 lmer_time <- data %>% 
-  get_coefs(.formula, method = "lmer", n_days = 28, start = "2020-04-01")
+  get_coefs(.formula, method = "lmer", n_days = 7, start = "2020-04-01")
+
+lmer_time$plot +
+  geom_point()
 
 lmer_time$df %>% 
   ggplot(aes(date_start, nobs)) +
@@ -25,17 +28,15 @@ lmer_time$df %>%
 
 # same but with the coef on deaths lag. coef_position determines which coef to plot
 lmer_time_deaths <- data %>% 
-  get_coefs(stringency_index ~ distrust_people + res_chng_lag_34 + deaths_per_mil_lag_7 +
-              log(gdp_per_capita) + ghs + pop.km2 + polity2 + ethnic + education_index +
-              (1 | location), n_days = 14, coef_position = 4)
+  get_coefs(update(.formula, ~ . + deaths_per_mil_lag_5), n_days = 14, coef_position = 2)
 
 # coef on distrust in a OLS model over time
-form <- stringency_index ~ distrust_people + conf_govt + total_deaths_per_million +
-  conflict_index + continent + deaths_per_mil_lag_5 +
-  log(gdp_per_capita) + ghs + pop.km2 + polity2 + ethnic + education_index
+form <- stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+  ghs + ethnic + pop.km2 + polity2 + log_conflict + conf_govt + deaths_per_mil_lag_5
 
 lm_time <- data %>% 
-  get_coefs(form, n_days = 1, method = "lm", coef_position = 2, start = "2020-04-01")
+  get_coefs(update(form, ~ . + trans_chng_lag_28), 
+            n_days = 1, method = "lm", coef_position = 2, start = "2020-04-01")
 
 lm_time$df$estimate %>% mean()
 

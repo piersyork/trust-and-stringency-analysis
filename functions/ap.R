@@ -1,4 +1,4 @@
-
+library(lme4)
 #' @export
 plot_vif <- function(model) {
   box::use(dplyr[...],

@@ -24,9 +24,11 @@ my_theme <- theme_minimal() +
 
 theme_set(my_theme)
 
-modelx <- lmer(stringency_index ~ distrust_people + conf_govt + ghs + ethnic + regime_type +
-       democracy_index + pop.km2 + log_gdp + log_conflict + deaths_per_mil_lag_5 +  continent +
-       (1 | location), data)
+.formula <- stringency_index ~ distrust_people + conf_govt + ghs + ethnic + pop.km2 + gdp_growth + 
+  log_gdp + log_conflict + deaths_per_mil_lag_5 + polity2 + education_index +
+  (1 | location)
+
+modelx <- lmer(.formula, data)
 screenreg(modelx)
 
 # model_check <- check_model(modelx)
@@ -55,20 +57,20 @@ modelx2 <- lmer(stringency_index ~ distrust_people + conf_govt + ghs + ethnic +
                  pop.km2 + log_gdp + log_conflict + deaths_per_mil_lag_5 + continent +
                   democracy_index +
                  (1 | location), data)
-form <- stringency_index ~ distrust_people + conf_govt + ghs + ethnic +
-  democracy_index + pop.km2 + log_gdp + log_conflict + deaths_per_mil_lag_5 +
-  (1 | location)
 
-model <- lmer(update(form, ~ .), data) #  - deaths_per_mil_lag_5
 
+model <- lmer(update(.formula, ~ . ), data) #  - deaths_per_mil_lag_5
+screenreg(model)
 
 plot_vif(model) +
   theme(axis.text.x = element_text(size = 11))
 
 plot_homogeneity(model)
 
+plot_dfbetas(model)
 
-lme_form <- update(form, ~ . - (1 | location))
+
+lme_form <- update(.formula, ~ . - (1 | location))
 lme_model <- data %>%
   select(all.vars(lme_form), location) %>%
   na.omit() %>%
@@ -91,7 +93,7 @@ plot.merMod(model)
 data %>%
   ggplot(aes(new_deaths_per_million, stringency_index)) +
   geom_point(alpha = 0.3) +
-  geom_smooth(method = lm)
+  geom_smooth(method = lm, formula = y ~ poly(x, 4, raw = TRUE))
 
 model %>% class()
 # lev <- HLMdiag::leverage(model, level = "location")

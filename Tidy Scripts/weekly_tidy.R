@@ -27,11 +27,10 @@ weekly_data <- data %>%
   group_by(weekno) %>% 
   mutate(date = min(date) - 2) %>% 
   group_by(location, alpha.3, date) %>% 
-  summarise(across(c(stringency_index, res_pct_chng, reproduction_rate, distrust_people, gdp_per_capita,
-                     ghs, sch_enrol_per_cap, gdp_growth, health_spending_pct_gdp, pop.km2,
-                     democracy_index, ethnic, conf_govt, conflict_index, education_index), mean),
-            across(c(new_cases_per_million, new_deaths_per_million), ~mean(.x, na.rm = TRUE)/10),
-            continent) %>%
+  summarise(across(c(stringency_index, res_pct_chng, distrust_people, gdp_per_capita,
+                     ghs, gdp_growth, health_spending_pct_gdp, pop.km2,
+                     polity2, ethnic, conf_govt, conflict_index, education_index), mean),
+            across(c(new_cases_per_million, new_deaths_per_million), ~mean(.x, na.rm = TRUE)/10)) %>%
   rename(daily_deaths_100k = new_deaths_per_million, daily_cases_100k = new_cases_per_million) %>% 
   ungroup() %>% 
   distinct() %>% 
@@ -46,7 +45,7 @@ weekly_data %>%
          res_chng_lag1 = lag(res_pct_chng, 1)) %>% 
   lmer(stringency_index ~ distrust_people + log(gdp_per_capita) + excess_lag_1 + res_chng_lag1 +
          daily_cases_100k +
-         ghs + pop.km2 + democracy_index + ethnic + sch_enrol_per_cap +
+         ghs + pop.km2 + polity2 + ethnic + sch_enrol_per_cap +
          (1 | location), .) %>% 
   screenreg()
 

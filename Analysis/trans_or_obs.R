@@ -25,10 +25,10 @@ load_project_data()
 vars <- c("deaths_per_mil_lag_5", "conf_govt", "ghs", "pop.km2", "education_index",
           "polity2", "ethnic", "log_gdp", "log_conflict", "gdp_growth")
 
-data$trans_chng_lag_34
+data$location %>% unique()
 
 model_x <- lmer(.formula, data)
-model_y <- lmer(update(.formula, ~ . + Mod(trans_chng_lag_34)), data)
+model_y <- lmer(update(.formula, ~ . + trans_chng_lag_5), data)
 
 model_z <- data %>% 
   select(location, all_of(vars), stringency_index, trans_chng_lag_34, distrust_people) %>% 
@@ -89,9 +89,23 @@ data %>%
 
 data %>% 
   filter(location %in% countries_exc) %>%
-  summarise(across(distrust_people, mean))
+  summarise(across(distrust_people, median))
+data %>% 
+  # filter(!location %in% countries_exc) %>%
+  summarise(across(distrust_people, median))
 
-
+data %>% 
+  filter(location %in% countries_exc) %>%
+  group_by(location) %>% 
+  summarise(across(stringency_index, mean, na.rm = TRUE)) %>% 
+  use_series(stringency_index) %>% 
+  mean()
+data %>% 
+  # filter(!location %in% countries_exc) %>%
+  group_by(location) %>% 
+  summarise(across(stringency_index, mean, na.rm = TRUE)) %>% 
+  use_series(stringency_index) %>% 
+  mean()
 
 
 data %>% 
