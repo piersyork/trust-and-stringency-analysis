@@ -14,6 +14,25 @@ my_theme <- theme_minimal() +
 
 theme_set(my_theme)
 
+data %>% 
+  select(distrust_people, log_gdp, gdp_growth, log_conflict, education_index) %>% 
+  distinct() %>% 
+  gtsummary::tbl_summary(
+    type = gtsummary::all_continuous() ~ "continuous2",
+    statistic = list(gtsummary::all_continuous() ~ c("{mean} ({sd})")),
+    missing_text = "Missing Data",
+    label = list(distrust_people ~ "Distrust in People",
+                 log_gdp ~ "Log of GDP per Capita",
+                 gdp_growth ~ "GDP Growth",
+                 log_conflict ~ "Log of Conflict Index",
+                 education_index ~ "Education Index")
+  ) %>%
+  gtsummary::modify_header(list(label ~ "**Variable**")) %>%
+  gtsummary::italicize_labels() %>%
+  gtsummary::add_stat_label(label = list(gtsummary::all_continuous() ~ c("Mean (SD)"))) %>%
+  gtsummary::as_gt() %>%
+  gt::tab_source_note(source_note = "SD = Standard Deviation")
+
 ## Main Plots:
 # plot of deaths: trusting vs untrusting
 data %>% 
@@ -71,9 +90,9 @@ data %>%
 data %>% 
   select(location, date, trusting, stringency_index) %>% 
   na.omit() %>% 
-  group_by(trusting, date) %>% 
+  group_by(date) %>% #trusting, 
   summarise(stringency_index = mean(stringency_index)) %>% 
-  ggplot(aes(date, stringency_index, colour = factor(trusting))) +
+  ggplot(aes(date, stringency_index)) + #, colour = factor(trusting)
   geom_smooth(span = 0.01, se = FALSE, size = 0.5) +
   # geom_line() +
   scale_x_date(limits = c(as_date("2020-01-01"), as_date("2021-03-01")), 
@@ -123,12 +142,30 @@ plotly::ggplotly()
 
 data %>% 
   plot_summarised(conf_govt, stringency_index)
+data %>% 
+  plot_summarised(conf_govt, distrust_people)
+data %>% 
+  select(conf_govt, distrust_people) %>% 
+  distinct() %>% 
+  lm(distrust_people ~ conf_govt, .) %>% 
+  screenreg()
 
 data %>% 
-  plot_summarised(distrust_people, res_pct_chng)
+  plot_summarised(education_index, distrust_people, .poly = 2)
 data %>% 
-  plot_summarised(stringency_index, res_pct_chng)
+  plot_summarised(log_gdp, stringency_index)
+data %>% 
+  plot_summarised(gdp_growth, distrust_people)
+data %>% 
+  plot_summarised(ghs, distrust_people)
+data %>% 
+  mutate(log_pop_km2 = log(pop.km2)) %>% 
+  plot_summarised(log_pop_km2, distrust_people)
+data %>% 
+  plot_summarised(pop_65, stringency_index)
 
+data %>% 
+  plot_summarised(new_deaths_per_million, distrust_people)
 
 data %>% 
   select(location, distrust_people, conf_govt) %>% 

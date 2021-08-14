@@ -42,7 +42,11 @@ data %>%
 # map_tidy <- tidy(map_data, "COUNTRY") %>% 
 #     filter(!id == "Antarctica")
 
-map_data <- readRDS("Map Data/map_data.rds")
+map_data <- readRDS("Map Data/map_data.rds") %>% 
+    mutate(SOVEREIGNT = recode(SOVEREIGNT, 
+                               "United States of America" = "United States",
+                               "Czechia" = "Czech Republic",
+                               "Republic of Serbia" = "Serbia"))
 
 # Set theme
 my_theme <- theme_minimal() +
@@ -155,10 +159,7 @@ server <- function(input, output) {
             select(location, distrust_people, input$vars) %>% #, input$vars
             na.omit() %>% 
             group_by(location) %>% 
-            mutate(across(where(is.numeric), ~mean(.x)),
-                   location = recode(location,
-                                     "United States" = "United States of America",
-                                     "Serbia" = "Republic of Serbia")) %>% 
+            mutate(across(where(is.numeric), ~mean(.x))) %>% 
             distinct()
         # print(nrow(cntry_data))
         # 

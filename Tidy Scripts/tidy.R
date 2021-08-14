@@ -100,10 +100,16 @@ gdp_growth <- gdp_growth %>%
 values <- fixed
 
 values %>% 
+  as_tibble() %>% 
+  select(uniqid, A165, cntry_AN, year) %>% 
+  count(year)
+
+values %>% 
   group_by(cntry_AN) %>% 
-  summarise(distrust = mean(A165, na.rm = TRUE)) %>% 
+  summarise(distrust = mean(A165, na.rm = TRUE)-1) %>% 
   na.omit() %>% 
-  pull(cntry_AN)
+  arrange() %>% 
+  print(n = 100)
 colnames(values) %>% grep("X001", ., value = TRUE)
 female_distrust <- values %>% 
   as_tibble() %>% 
@@ -261,10 +267,23 @@ group <- sub %>%
   # summarise(across(state_of_health:V001, ~ mean(.x, na.rm = TRUE))) %>% 
   unique()
 
+gini <- WDI::WDI(indicator = c(gini = "SI.POV.GINI"), start = 2012, end = 2019) %>% 
+  as_tibble() %>% 
+  na.omit() %>% 
+  group_by(country) %>% 
+  filter(year == max(year)) %>% 
+  select(country, gini)
+  
+
 world_bank <- read_csv("Raw/world_bank_indicators.csv") %>% 
   group_by(alpha.3) %>% 
   filter(year == 2019) %>% 
-  rename(gdp_per_capita = gdp_per_cap)
+  rename(gdp_per_capita = gdp_per_cap) %>% 
+  left_join(gini)
+
+world_bank %>% 
+  select(country, gini) %>% 
+  na.omit()
 
 country <- values %>% 
   select(cntry_AN, reg_nuts1, reg_nuts2, gwght, A009, A065, A068, A165,

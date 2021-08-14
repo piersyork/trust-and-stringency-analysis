@@ -64,29 +64,34 @@ model3 <- data %>%
          ghs + (1 | location), .)
 screenreg(model3)
 
-# adding cultural
+# adding population and polity
 model4 <- data %>% 
-  lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + 
-         ghs + ethnic + pop.km2 + polity2 + (1 | location), .)
+  lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+         ghs + pop.km2 + polity2 + (1 | location), .)
 screenreg(model4)
 
 # add conflict
 model5 <- data %>% 
   lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
-         ghs + ethnic + pop.km2 + polity2 + log_conflict + (1 | location), .)
+         ghs + pop.km2 + polity2 + log_conflict + (1 | location), .)
 screenreg(model5)
 
 # include conf_govt
 model6 <- data %>% 
   lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
-         ghs + ethnic + pop.km2 + polity2 + log_conflict + conf_govt + 
+         ghs + pop.km2 + polity2 + log_conflict + conf_govt + pop_65 +
          (1 | location), .)
+
 screenreg(model6)
+dsum6 <- summary(model6)
+sum6$coefficients %>% 
+  as_tibble(rownames = "coef") %>% 
+  `colnames<-`(., tolower(make.names(colnames(.)))) 
 
 # inlcude lag_deaths
 model7 <- data %>% 
   lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
-         ghs + ethnic + pop.km2 + polity2 + log_conflict + conf_govt + 
+         ghs + pop.km2 + polity2 + log_conflict + conf_govt + 
          deaths_per_mil_lag_5 + (1 | location), .)
 screenreg(model7)
 
@@ -96,15 +101,15 @@ screenreg(list(model1, model2, model3, model4, model5, model6, model7))
 # include transport change
 model8 <- data %>% 
   lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
-         ghs + ethnic + pop.km2 + polity2 + log_conflict + conf_govt + 
-         deaths_per_mil_lag_5 + trans_chng_lag_28 + (1 | location), .)
+         ghs + pop.km2 + polity2 + log_conflict + conf_govt + 
+         trans_chng_lag_28 + (1 | location), .)
 screenreg(model8)
 
-model10 <- data %>% 
+model9 <- data %>% 
   lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
-         ghs + ethnic + pop.km2 + polity2 + log_conflict + conf_govt + 
-         deaths_per_mil_lag_5 + (1 | location), .) # need to readd continent
-screenreg(list(model7, model10))
+         ghs + pop.km2 + polity2 + log_conflict + conf_govt + 
+         deaths_per_mil_lag_5 + trans_chng_lag_28 + (1 | location), .) 
+screenreg(model9)
 
 methods(class = "merMod")
 
@@ -140,7 +145,7 @@ distrust_df %>%
 
 data %>% 
   lmer(trans_pct_chng ~ distrust_people + log_gdp + gdp_growth + education_index +
-         ghs + ethnic + pop.km2 + polity2 + log_conflict + conf_govt +
+         ghs + pop.km2 + polity2 + log_conflict + conf_govt +
          deaths_per_mil_lag_5 + (1 | location), .) %>% 
   screenreg()
 
@@ -150,15 +155,15 @@ data$regime_type %>% unique()
 
 model11 <- data %>% 
   lmer(stringency_index ~ distrust_people + conf_govt + total_deaths_per_million +
-         log(conflict_index) + continent + deaths_per_mil_lag_5 +
-         log(gdp_per_capita) + ghs + pop.km2 + ethnic + education_index +
+         log(conflict_index) + deaths_per_mil_lag_5 +
+         log(gdp_per_capita) + ghs + pop.km2 + education_index +
          poly(polity2, 2, raw = TRUE) + 
          (1 | location), .)
 model12 <- data %>% 
   lmer(stringency_index ~ distrust_people + conf_govt + total_deaths_per_million +
-         log(conflict_index) + continent + deaths_per_mil_lag_5 +
-         log(gdp_per_capita) + ghs + pop.km2 + ethnic + education_index +
-         polity2 + regime_type +
+         log(conflict_index) + deaths_per_mil_lag_5 +
+         log(gdp_per_capita) + ghs + pop.km2 + education_index +
+         polity2 + 
          (1 | location), .)
 screenreg(list(model11, model12))
 methods(class = "merMod")
@@ -166,7 +171,7 @@ residuals(model12)
 # multivariate pooled model with country clustered SE
 pooled4 <- data %>% 
   lm(stringency_index ~ distrust_people + log(gdp_per_capita) + deaths_per_mil_lag_7 +
-       res_chng_lag_34 + ghs + pop.km2 + polity2 + ethnic + education_index, .) %>% 
+       res_chng_lag_34 + ghs + pop.km2 + polity2 + education_index, .) %>% 
   coeftest(vcovCL, cluster = ~location)
 screenreg(list(pooled4, model4))
 
@@ -210,7 +215,7 @@ data %>%
 ## Weekly data models with excess deaths instead of recorded covid deaths
 weekly_data %>% 
   lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
-         ghs + ethnic + pop.km2 + polity2 + log_conflict + conf_govt + excess_lag_1 +
+         ghs + pop.km2 + polity2 + log_conflict + conf_govt + excess_lag_1 +
          (1 | location), .) %>% 
   screenreg()
 weekly_data %>% 
@@ -234,7 +239,7 @@ data %>%
   screenreg()
 data %>% 
   lmer(res_pct_chng ~ distrust_people + polity2 + deaths_per_mil_lag_7 + log(gdp_per_capita) +
-         education_index + ghs + ethnic + pop.km2 + stringency_index +
+         education_index + ghs + pop.km2 + stringency_index +
          (1 | location), .) %>% 
   screenreg()
 
@@ -260,7 +265,7 @@ date_begin <- data %>%
 s = data %>% 
   filter(location %in% countries, date >= date_begin) %>% 
   get_coefs(stringency_index ~ distrust_people + res_chng_lag_34 + deaths_per_mil_lag_7 +
-         log(gdp_per_capita) + ghs + pop.km2 + polity2 + ethnic + education_index +
+         log(gdp_per_capita) + ghs + pop.km2 + polity2 + education_index +
          (1 | location), start = date_begin, n_days = 7)
 
 s$df$estimate %>% mean()
@@ -278,13 +283,13 @@ data %>%
 ## without deaths and res_chng
 data %>% 
   lmer(stringency_index ~ distrust_people + continent +
-         log(gdp_per_capita) + ghs + pop.km2 + polity2 + ethnic + education_index +
+         log(gdp_per_capita) + ghs + pop.km2 + polity2 + education_index +
          (1 | location), .) %>% 
   screenreg()
 data %>% 
   plm(stringency_index ~ distrust_people + continent + deaths_per_mil_lag_7 + res_chng_lag_34 + 
         # stringency_index_lag_1 +
-        log(gdp_per_capita) + ghs + pop.km2 + polity2 + ethnic + education_index, .,
+        log(gdp_per_capita) + ghs + pop.km2 + polity2 + education_index, .,
       index = c("location", "date"), effect = "time") %>% 
   summary(vcov = vcovHC)
 
@@ -292,19 +297,19 @@ data %>%
 ## trust effect on res_chng 
 data %>% 
   lmer(trans_pct_chng ~ distrust_people + deaths_per_mil_lag_7 + stringency_index_lag_7 +
-         log(gdp_per_capita) + ghs + pop.km2 + regime_type + ethnic + education_index +
+         log(gdp_per_capita) + ghs + pop.km2 + regime_type + education_index +
          (1 | location), .) %>% 
   screenreg()
 gc_trans <- data %>% 
   get_coefs(trans_pct_chng ~ distrust_people + conf_govt + deaths_per_mil_lag_7 + stringency_index_lag_7 +
-              log(gdp_per_capita) + ghs + pop.km2 + regime_type + ethnic + education_index + conflict_index,
+              log(gdp_per_capita) + ghs + pop.km2 + regime_type + education_index + conflict_index,
             n_days = 1, method = "lm")
 
 data %>% 
   plm(res_pct_chng ~ distrust_people + continent + deaths_per_mil_lag_7 + 
         stringency_index_lag_7 + 
         log(gdp_per_capita) + ghs + pop.km2 + polity2 + 
-        ethnic + education_index, .,
+        education_index, .,
       index = c("location", "date"), effect = "time") %>% 
   summary(vcov = vcovHC)
 
@@ -313,7 +318,7 @@ data %>%
 # could I also control for max stringency
 data %>% 
   lm(max_stringency ~ distrust_people + conf_govt + continent + log(gdp_per_capita) +
-       ghs + pop.km2 + polity2 + ethnic + education_index + conflict_index, .) %>% 
+       ghs + pop.km2 + polity2 + education_index + conflict_index, .) %>% 
   coeftest(vcovCL, cluster = ~location) 
 
 
@@ -338,7 +343,7 @@ data_deaths_before <- data %>%
 data %>% 
   left_join(data_deaths_before) %>% 
   lm(max_stringency ~ distrust_people + conf_govt + continent + log(gdp_per_capita) +
-       ghs + pop.km2 + polity2 + ethnic + education_index + log(conflict_index) +
+       ghs + pop.km2 + polity2 + education_index + log(conflict_index) +
        deaths_before_max, .) %>% 
   coeftest(vcovCL, cluster = ~location) %>% 
   screenreg()
@@ -347,13 +352,13 @@ data %>%
 ## deaths as outcome
 data %>% 
   lmer(new_deaths_per_million ~ distrust_people + conf_govt + continent + log(gdp_per_capita) +
-         ghs + pop.km2 + polity2 + ethnic + education_index + log(conflict_index) +
+         ghs + pop.km2 + polity2 + education_index + log(conflict_index) +
          stringency_index_lag_7 + (1 | location), .) %>% 
   screenreg()
 
 data %>% 
   plm(new_deaths_per_million ~ distrust_people + conf_govt + continent + log(gdp_per_capita) +
-        ghs + pop.km2 + polity2 + ethnic + education_index + log(conflict_index) +
+        ghs + pop.km2 + polity2 + education_index + log(conflict_index) +
         stringency_index_lag_7, .,
       index = c("location", "date"), effect = "time") %>% 
   coeftest(vcovHC) %>% 
@@ -361,7 +366,7 @@ data %>%
 
 weekly_data %>% 
   lmer(excess_deaths_per_100k ~ distrust_people + conf_govt + continent + log(gdp_per_capita) +
-         ghs + pop.km2 + polity2 + ethnic + education_index + log(conflict_index) +
+         ghs + pop.km2 + polity2 + education_index + log(conflict_index) +
          stringency_index_lag_4 +
          (1 | location), .) %>% 
   screenreg()
@@ -378,11 +383,18 @@ data %>%
 
 
 data %>% 
-  select(continent, location) %>% 
+  select(location, distrust_people, stringency_index) %>% 
+  na.omit() %>% 
+  select(location, distrust_people) %>% 
   distinct() %>% 
-  use_series(continent) %>% 
-  table()
+  print(n = 100) %>% 
+  use_series(distrust_people) %>% 
+  range()
 
 
 model = lmer(stringency_index ~ distrust_people + log_gdp + polity2 + (1 | location), data)
-plot_cooks_distance(model)
+
+model_deaths <- data %>% 
+  lmer(trans_pct_chng*-1 ~ stringency_index_lag_7 + deaths_per_mil_lag_7 + log_gdp + gdp_growth + education_index +
+         ghs + pop.km2 + polity2 + log_conflict + conf_govt + trans_chng_lag_7 + (1 | location), .)
+screenreg(model_deaths)

@@ -57,7 +57,7 @@ grep("Slovak", conflict_countries, value = TRUE)
 
 country_data <- country_data_all %>% 
   select(location, alpha.3, distrust_people, conf_govt, gdp_per_capita,  
-         ghs, ethnic, pop.km2, gdp_growth, health_spending_pct_gdp) %>% 
+         ghs, ethnic, pop.km2, gdp_growth, health_spending_pct_gdp, pop_65, gini) %>% 
   distinct() %>% 
   left_join(education, by = c("location" = "country")) %>% 
   left_join(conflict, by = c("location" = "country")) %>% 
@@ -121,7 +121,7 @@ data <- stringency %>%
   left_join(country_data, by = c("alpha.3", "location"))
 
 data %>% 
-  select(location, education_index, conflict_index) %>% 
+  select(location, gini, distrust_people) %>% 
   na.omit() %>% 
   distinct()
 

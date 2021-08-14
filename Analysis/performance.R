@@ -55,8 +55,7 @@ methods(class = "merMod")
 
 modelx2 <- lmer(stringency_index ~ distrust_people + conf_govt + ghs + ethnic +
                  pop.km2 + log_gdp + log_conflict + deaths_per_mil_lag_5 + continent +
-                  democracy_index +
-                 (1 | location), data)
+                 democracy_index + (1 | location), data)
 
 
 model <- lmer(update(.formula, ~ . ), data) #  - deaths_per_mil_lag_5
@@ -67,8 +66,42 @@ plot_vif(model) +
 
 plot_homogeneity(model)
 
+box::use(dplyr[...],
+         HLMdiag[pull_resid],
+         ggplot2[...],
+         stats[fitted])
+tibble(fitted = fitted(model), 
+       std.resid = pull_resid(model, standardize = TRUE, type = "ls")) %>% 
+  ggplot(aes(fitted, std.resid)) + # sqrt(Mod(std.resid))
+  geom_point(colour = "#01468B", alpha = 0.2) +
+  geom_hline(yintercept = 0, colour = "#42B540", linetype = "dashed", size = 1) +
+  # geom_smooth(colour = "#f7634c") +
+  labs(x = "Fitted Values", y = "Standardised Residuals")
+
+HLMdiag::hlm_resid(model, level = 1, standardize = TRUE, include.ls = TRUE) %>% 
+  ggplot(aes(.ls.fitted, .std.ls.resid, colour = location)) + # sqrt(Mod(std.resid))
+  geom_point(alpha = 0.2, show.legend = FALSE) + # colour = "#01468B", 
+  geom_hline(yintercept = 0, colour = "#42B540", linetype = "dashed", size = 1) +
+  # geom_smooth(colour = "#f7634c") +
+  labs(x = "Fitted Values", y = "Standardised Residuals")
+
+data %>% 
+  select(location, stringency_index, distrust_people) %>% 
+  na.omit() %>% 
+  group_by(location) %>% 
+  count() %>% 
+  print(n = 100)
+
 plot_dfbetas(model)
 
+vignette("hlm_resid", package = "HLMdiag")
+
+HLMdiag::hlm_resid(model, level = "1", standardize = FALSE, include.ls = FALSE) %>% 
+  select(location, .ranef.intercept) %>% 
+  ggplot(aes(location, .ranef.intercept)) +
+  geom_col(width = 0.15, colour = "#01468B") +
+  geom_point() +
+  coord_flip()
 
 lme_form <- update(.formula, ~ . - (1 | location))
 lme_model <- data %>%
@@ -102,7 +135,7 @@ model %>% class()
 data_2 <- data %>% 
   filter(date > date("2020-06-01"))
 
-model_2 <- lmer(form, data_2)
+model_2 <- lmer(.formula, data_2)
 screenreg(model_2)
 
 
