@@ -284,7 +284,9 @@ group <- sub %>%
   unique()
 
 gini <- read_csv("Raw/swiid9_1_summary.csv") %>% 
-  filter(year == 2017) %>% 
+  filter(year %in% 2016:2019) %>% 
+  group_by(country) %>% 
+  filter(year == max(year)) %>% 
   select(country, gini_disp, gini_mkt) %>% 
   mutate(country = recode(country,
                           "Egypt" = "Egypt, Arab Rep.",
@@ -362,9 +364,9 @@ countries_in <- country %>%
   distinct() %>% 
   use_series(location)
 
-countries_in[!countries_in %in% countries_educ$country]
+countries_in[!countries_in %in% gini$country]
 
-countries_educ$country %>% grep("Russia", ., value = TRUE)
+gini$country %>% grep("Tajik", ., value = TRUE)
 
 alpha_in <- country$alpha.3 %>% unique()
 

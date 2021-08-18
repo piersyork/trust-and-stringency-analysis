@@ -42,7 +42,7 @@ theme_set(my_theme)
 ```{r summary}
 data %>% 
   select(distrust_people, log_gdp, gdp_growth, education_index, log_conflict, conf_govt, polity2,
-         pop.km2, pop_65, ghs) %>% 
+         pop.km2, pop_65, ghs, gini_disp) %>% 
   distinct() %>% 
   gtsummary::tbl_summary(
     type = gtsummary::all_continuous() ~ "continuous2",
@@ -57,7 +57,8 @@ data %>%
                  polity2 ~ "Polity",
                  pop.km2 ~ "Population Density (per km2)", 
                  pop_65 ~ "Population over age 65", 
-                 ghs ~ "Global Health Security Index")
+                 ghs ~ "Global Health Security Index",
+                 gini_disp ~ "Gini Coefficient")
   ) %>%
   gtsummary::modify_header(list(label ~ "**Variable**")) %>%
   gtsummary::italicize_labels() %>%
@@ -161,6 +162,11 @@ model_containment <- data %>%
 model_support <- data %>% 
   lmer(support_index ~ distrust_people + log_gdp + gdp_growth + education_index +
          pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + (1 | location), .)
+# lm_support <- data %>% 
+#   lm(support_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+#          pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt, .) %>% 
+#   coeftest(., vcovCL, cluster = ~location)
+#   
 
 
 htmlreg(list(model8, model_containment, model_support, model_response), omit.coef = "^((?!distrust).)*$",
