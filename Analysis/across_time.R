@@ -11,8 +11,7 @@ box::use(dplyr[...],
 load_project_data()
 
 .formula <- stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
-         ghs + ethnic + pop.km2 + polity2 + log_conflict + conf_govt + deaths_per_mil_lag_5 +
-         (1 | location)
+              pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + (1 | location)
 
 
 # how the effect of distrust changes over time (get_coefs is defined in functions/ts.r)

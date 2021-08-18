@@ -10,15 +10,22 @@ box::use(dplyr[...],
 
 load_project_data()
 
-.formula <- stringency_index ~ distrust_people + conf_govt + ghs + ethnic + pop.km2 + gdp_growth + 
-  log_gdp + log_conflict + deaths_per_mil_lag_5 + polity2 + education_index +
-  (1 | location)
+.formula <- stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+  pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + (1 | location)
 
 lag_df <- data %>% 
-  test_lag(update(.formula, ~ . - deaths_per_mil_lag_5), lag_var = trans_pct_chng, n_lag = 50)
+  test_lag(update(.formula, ~ . ), lag_var = trans_pct_chng, n_lag = 50)
+
+lag_df$df %>% 
+  filter(estimate == max(estimate))
 
 lag_df_deaths <- data %>% 
-  test_lag(update(.formula, ~ . - deaths_per_mil_lag_5), lag_var = new_deaths_per_million, n_lag = 30)
+  test_lag(update(.formula, ~ . ), lag_var = new_deaths_per_million, n_lag = 50)
+
+lag_df_deaths$plot +
+  geom_point()
+lag_df_deaths$df %>% 
+  filter(estimate == max(estimate))
 
 deaths_simple <- data %>% 
   test_lag(stringency_index ~ distrust_people + (1 | location), 

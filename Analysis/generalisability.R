@@ -77,7 +77,10 @@ plot_grid(title, top_row, bot_row,
           rel_heights = c(0.2, 1, 1))
 
 data %>% 
-  mutate(sample = ifelse(is.na(distrust_people), 0, 1)) %>% 
+  mutate(sample = ifelse(is.na(distrust_people), 0, 1)) %>%
+  filter(sample == 0) %>% 
+  select(location, gdp_per_capita) %>% 
+  na.omit()
   group_by(sample) %>% 
   summarise(variarble = mean(gdp_per_capita, na.rm = TRUE)) 
 
@@ -96,9 +99,14 @@ list(gdp, ethnic, ghs, educ, pop, polity) %>%
 load_project_data()
 ### Draw map of counties in sample
 
+.formula <- stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+  pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + (1 | location)
+
 cntry_data <- data %>% 
-  select(location, max_stringency, distrust_people, ) %>% 
-  distinct()
+  select(all_of(all.vars(.formula))) %>% 
+  na.omit()
+
+
 
 # import map data
 map_data <- readRDS("Map Data/map_data.rds") %>% 
@@ -107,7 +115,8 @@ map_data <- readRDS("Map Data/map_data.rds") %>%
                              "Czechia" = "Czech Republic",
                              "Republic of Serbia" = "Serbia")) %>% 
   left_join(cntry_data, by = c("SOVEREIGNT" = "location")) %>%
-  mutate(sample = ifelse(!is.na(distrust_people), 1, 0))
+  mutate(sample = ifelse(!is.na(distrust_people), 1, 0)) %>% 
+  select(SOVEREIGNT, LEVEL, geometry, sample)
 
 map_data %>% 
   ggplot(aes(fill = factor(sample))) +
@@ -161,10 +170,6 @@ map_data %>%
   leaflet::addLegend(pal = pal_leg, values = ~max_stringency, opacity = 0.7, title = NULL,
                      position = "bottomleft", labFormat = leaflet::labelFormat())
 
-grep("United", unique(data$location), value = TRUE)
-grep("United", unique(map_data$SOVEREIGNT), value = TRUE)
-
-unique(data$location)[!unique(data$location) %in% map_data$SOVEREIGNT]
 
 .formula <- stringency_index ~ distrust_people + conf_govt + total_deaths_per_million +
   log_conflict + deaths_per_mil_lag_5 +

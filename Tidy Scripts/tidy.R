@@ -43,13 +43,25 @@ countries_raw <- read_xlsx("Raw/2020 Edition CNTSDATA.xlsx", skip = 1)
 
 countries_data <- countries_raw %>% 
   filter(year == 2019) %>% 
-  select(where(not_all_na)) 
+  select(where(not_all_na)) %>% 
+  mutate(country = recode(country,
+                          "Russian Federation" = "Russia",
+                          "Slovak Republic" = "Slovakia",
+                          "Korea, South" = "South Korea",
+                          "Myanmar (Burma)" = "Myanmar",
+                          "China PR" = "China"))
 
 countries_educ <- countries_raw %>% 
   filter(year == 2015) %>% 
   select(Wbcode, country, contains("school")) %>% 
   select(country, school11) %>% 
-  rename(sch_enrol_per_cap = school11)
+  rename(sch_enrol_per_cap = school11) %>% 
+  mutate(country = recode(country,
+                          "Russian Federation" = "Russia",
+                          "Slovak Republic" = "Slovakia",
+                          "Korea, South" = "South Korea",
+                          "Myanmar (Burma)" = "Myanmar",
+                          "China PR" = "China"))
 
 geni_raw <- read_csv("Raw/geni_index_worldbank.csv")
 geni <- geni_raw %>% 
@@ -130,7 +142,8 @@ distrust %>%
   geom_point() +
   geom_abline(intercept = 0, slope = 1, colour = "blue", size = 1)
 
-ghs <- read_csv("Raw/ghs.csv")
+ghs <- read_csv("Raw/ghs.csv") %>% 
+  mutate(location = recode(location, "Kyrgyz Republic" = "Kyrgyzstan"))
 
 
 democracy <- read_csv("Raw/democracy_index.csv")
@@ -148,7 +161,10 @@ density <- read_csv("Raw/country density.csv")
 density <- density %>% 
   mutate(location = gsub(pattern = "^\\s", replacement = "", x = location),
          location = gsub(pattern = "^\\s", replacement = "", x = location),
-         location = gsub(pattern = "^\\s", replacement = "", x = location)) %>% 
+         location = gsub(pattern = "^\\s", replacement = "", x = location),
+         location = recode(location,
+                           "Russia[note 10]" = "Russia",
+                           "Ukraine [note 4]" = "Ukraine")) %>% 
   select(location, area_km2, pop.km2)
 
 country_iso$location[!country_iso$location %in% ethnic$location]
@@ -267,13 +283,20 @@ group <- sub %>%
   # summarise(across(state_of_health:V001, ~ mean(.x, na.rm = TRUE))) %>% 
   unique()
 
-gini <- WDI::WDI(indicator = c(gini = "SI.POV.GINI"), start = 2012, end = 2019) %>% 
-  as_tibble() %>% 
-  na.omit() %>% 
-  group_by(country) %>% 
-  filter(year == max(year)) %>% 
-  select(country, gini)
-  
+gini <- read_csv("Raw/swiid9_1_summary.csv") %>% 
+  filter(year == 2017) %>% 
+  select(country, gini_disp, gini_mkt) %>% 
+  mutate(country = recode(country,
+                          "Egypt" = "Egypt, Arab Rep.",
+                          "Korea" = "Korea, Rep.",
+                          "Iran" = "Iran, Islamic Rep.",
+                          "Russia" = "Russian Federation",
+                          "Kyrgyzstan" = "Kyrgyz Republic",
+                          "Slovakia" = "Slovak Republic",
+                          "Venezuela" = "Venezuela, RB",
+                          "São Tomé and Príncipe" = "Sao Tome and Principe"))
+
+gini$country[!gini$country %in% world_bank$country]
 
 world_bank <- read_csv("Raw/world_bank_indicators.csv") %>% 
   group_by(alpha.3) %>% 
@@ -281,8 +304,11 @@ world_bank <- read_csv("Raw/world_bank_indicators.csv") %>%
   rename(gdp_per_capita = gdp_per_cap) %>% 
   left_join(gini)
 
+gini$country[!gini$country %in% world_bank$country]
+grep("Macedonia", world_bank$country, value = TRUE)
+
 world_bank %>% 
-  select(country, gini) %>% 
+  select(country, gini_disp) %>% 
   na.omit()
 
 country <- values %>% 
@@ -330,6 +356,25 @@ country <- values %>%
   # left_join(avg_stringency, by = "alpha.3") %>% 
   # left_join(avg_mobility_6) %>% 
   distinct() 
+
+countries_in <- country %>% 
+  select(location, distrust_people) %>% 
+  distinct() %>% 
+  use_series(location)
+
+countries_in[!countries_in %in% countries_educ$country]
+
+countries_educ$country %>% grep("Russia", ., value = TRUE)
+
+alpha_in <- country$alpha.3 %>% unique()
+
+country %>% 
+  select(location, distrust_people, gini_disp) %>% 
+  na.omit() %>% 
+  distinct()
+
+world_bank$alpha.3[!world_bank$alpha.3 %in% alpha_in]
+alpha_in[!alpha_in %in% world_bank$alpha.3]
 
 distrust_countries <- country %>% 
   select(location, distrust_people) %>% 

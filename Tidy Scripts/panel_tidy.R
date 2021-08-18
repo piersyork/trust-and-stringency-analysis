@@ -2,7 +2,7 @@ box::use(dplyr[...],
          readr[read_csv, cols],
          readxl[read_xlsx],
          tidyr[gather],
-         lubridate[dmy])
+         lubridate[dmy, ymd])
 covid_raw <- read_csv("Raw/owid-covid-data.csv", col_types = cols(.default = "d", 
                                                                   date = "D",
                                                                   iso_code = "c",
@@ -57,7 +57,7 @@ grep("Slovak", conflict_countries, value = TRUE)
 
 country_data <- country_data_all %>% 
   select(location, alpha.3, distrust_people, conf_govt, gdp_per_capita,  
-         ghs, ethnic, pop.km2, gdp_growth, health_spending_pct_gdp, pop_65, gini) %>% 
+         ghs, ethnic, pop.km2, gdp_growth, health_spending_pct_gdp, pop_65, gini_disp, gini_mkt) %>% 
   distinct() %>% 
   left_join(education, by = c("location" = "country")) %>% 
   left_join(conflict, by = c("location" = "country")) %>% 
@@ -68,18 +68,47 @@ country_data %>%
   na.omit() %>% 
   print(n = 2000)
 
+owidR::owid("covid-stringency-index")
+
 
 mobility_raw <- read_csv("Raw/Global_Mobility_Report.csv")
-stringency_raw <- read_xlsx("Raw/OxCGRT_timeseries_all.xlsx")
-
-stringency <- stringency_raw %>% 
-  gather("date", "stringency_index", -country_code, - country_name) %>% 
-  mutate(date = dmy(date)) %>% 
-  rename(location = country_name, 
-         alpha.3 = country_code) %>% 
+# stringency_raw <- read_xlsx("Raw/OxCGRT_timeseries_all.xlsx")
+stringency <- read_csv("https://raw.githubusercontent.com/OxCGRT/covid-policy-tracker/master/data/OxCGRT_latest_combined.csv",
+                           col_types = cols(
+                             .default = "d",
+                             CountryName = "c",
+                             CountryCode = "c",
+                             RegionName = "c",
+                             RegionCode = "c",
+                             Jurisdiction = "c"
+                           )) %>% 
+  mutate(Date = ymd(Date)) %>% 
+  select(location = CountryName, alpha.3 = CountryCode, date = Date,
+         stringency_index = StringencyIndex,
+         response_index = GovernmentResponseIndex, 
+         containment_index = ContainmentHealthIndex,
+         support_index = EconomicSupportIndex) %>% 
+  group_by(location, alpha.3, date) %>% 
+  summarise(across(where(is.double), ~ max(.x, na.rm = TRUE))) %>% 
+  mutate(across(stringency_index:support_index, ~ifelse(is.infinite(.x), NA, .x))) %>% 
+  ungroup() %>% 
   mutate(location = recode(location,
                            "Kyrgyz Republic" = "Kyrgyzstan",
                            "Slovak Republic" = "Slovakia"))
+
+stringency %>% 
+  filter(is.infinite(stringency_index))
+  filter(location == "Egypt", date == as.Date("2021-05-25"))
+  
+
+# stringency <- stringency_raw %>% 
+#   gather("date", "stringency_index", -country_code, - country_name) %>% 
+#   mutate(date = dmy(date)) %>% 
+#   rename(location = country_name, 
+#          alpha.3 = country_code) %>% 
+#   mutate(location = recode(location,
+#                            "Kyrgyz Republic" = "Kyrgyzstan",
+#                            "Slovak Republic" = "Slovakia"))
 
 stringency_countries <- stringency %>% 
   na.omit() %>% 
@@ -118,12 +147,14 @@ countries_in[!countries_in %in% covid_countries]
 data <- stringency %>% 
   left_join(mobility, by = c("location", "date")) %>% 
   left_join(covid, by = c("location", "date")) %>% 
-  left_join(country_data, by = c("alpha.3", "location"))
+  left_join(country_data, by = c("alpha.3", "location")) %>% 
+  filter(date %in% date("2020-03-01"):date("2021-05-19"))
 
 data %>% 
-  select(location, gini, distrust_people) %>% 
+  select(location, date, new_deaths_per_million) %>%
   na.omit() %>% 
-  distinct()
+  use_series(date) %>% 
+  max()
 
 save(data, file = "Data/panel_data.Rdata")
 

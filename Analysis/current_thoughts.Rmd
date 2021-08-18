@@ -1,13 +1,10 @@
 ---
 title: "current_thoughts/questions"
 output: 
-  pdf_document:
-    toc: yes
-    fig_caption: yes
+  # pdf_document:
+  #   toc: yes
+  #   fig_caption: yes
   html_document:
-    code_folding: hide
-  html_notebook:
-    
     code_folding: hide
 ---
 
@@ -42,138 +39,134 @@ theme_set(my_theme)
 
 ```
 
-Model 4 includes all covariates\
-Model 5 adds a lagged variable for stringency\
-Model 6 removes res_pct_chng\
-Model 7 takes the log of conflict index\
-Model 7.5 is the same as Model 7 but excludes Nicaragua (is it an outlier?)\
-Model 8 same as model 7 but includes res_chng\
-Model 9 includes a variable for total deaths so far. In theory this accounts for the previous effects of the pandemic
+```{r summary}
+data %>% 
+  select(distrust_people, log_gdp, gdp_growth, education_index, log_conflict, conf_govt, polity2,
+         pop.km2, pop_65, ghs) %>% 
+  distinct() %>% 
+  gtsummary::tbl_summary(
+    type = gtsummary::all_continuous() ~ "continuous2",
+    statistic = list(gtsummary::all_continuous() ~ c("{mean} ({sd})")),
+    missing_text = "Missing Data",
+    label = list(distrust_people ~ "Distrust in People",
+                 log_gdp ~ "Log of GDP per Capita",
+                 gdp_growth ~ "GDP Growth",
+                 log_conflict ~ "Log of Conflict Index",
+                 education_index ~ "Education Index", 
+                 conf_govt ~ "Confidence in Government", 
+                 polity2 ~ "Polity",
+                 pop.km2 ~ "Population Density (per km2)", 
+                 pop_65 ~ "Population over age 65", 
+                 ghs ~ "Global Health Security Index")
+  ) %>%
+  gtsummary::modify_header(list(label ~ "**Variable**")) %>%
+  gtsummary::italicize_labels() %>%
+  gtsummary::add_stat_label(label = list(gtsummary::all_continuous() ~ c("Mean (SD)"))) %>%
+  gtsummary::as_gt() %>%
+  gt::tab_source_note(source_note = "SD = Standard Deviation")
+```
 
-```{r significance, results='asis'}
-# adding other country fixed variables
+
+```{r main_analysis, results='asis', echo=TRUE}
+
+## Initial models
+# pooled regression clustered SE on location
+pooled1 <- data %>% 
+  lm(formula = stringency_index ~ distrust_people) %>% 
+  coeftest(., vcovCL, cluster = ~location)
+
+# simple random effects model
+model1 <- data %>% 
+  lmer(stringency_index ~ distrust_people + (1 | location), .)
+
+
+# adding economic indicators
+model2 <- data %>% 
+  lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index + 
+         (1 | location), .)
+
+# adding population over 65 and population density
+model3 <- data %>% 
+  lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+         pop_65 + (1 | location), .)
+
+
+# adding ghs
 model4 <- data %>% 
-  lmer(stringency_index ~ distrust_people + deaths_per_mil_lag_5 + res_chng_lag_34 +
-         conflict_index + continent + conf_govt +
-         log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
-         (1 | location), .)
+  lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+         pop_65 + ghs + (1 | location), .) 
 
-# add lagged stringency to right hand side of formula
+
+# add polity
 model5 <- data %>% 
-  lmer(stringency_index ~ distrust_people + continent + res_chng_lag_34 +
-         deaths_per_mil_lag_5 + conflict_index + conf_govt +
-         log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
-         stringency_index_lag_1 +
-         (1 | location), .)
+  lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+         pop_65 + ghs + polity2 + (1 | location), .) 
 
-# no res chng
+
+# include conflict
 model6 <- data %>% 
-  lmer(stringency_index ~ distrust_people + continent + deaths_per_mil_lag_5 + 
-         conflict_index + conf_govt +
-         log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
-         (1 | location), .)
+  lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+         pop_65 + ghs + polity2 + log_conflict + (1 | location), .) 
 
-# including almost all variables and playing around with logged vars. Exclude Nicaragua because outlier?
 model7 <- data %>% 
-  # filter(!location == "Nicaragua") %>%
-  lmer(stringency_index ~ distrust_people + deaths_per_mil_lag_5 + conf_govt + 
-         log(conflict_index) + continent +
-         log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
-         (1 | location), .)
+  lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+         pop_65 + ghs + polity2 + log_conflict + pop.km2 + (1 | location), .) 
 
-model7_5 <- data %>% 
-  filter(!location == "Nicaragua") %>%
-  lmer(stringency_index ~ distrust_people + deaths_per_mil_lag_5 + conf_govt + 
-         log(conflict_index) + continent +
-         log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
-         (1 | location), .)
-
-# model 7 but including res_chng
 model8 <- data %>% 
-  lmer(stringency_index ~ distrust_people + deaths_per_mil_lag_5 + res_chng_lag_34 +
-         conf_govt + 
-         log(conflict_index) + continent +
-         log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
-         (1 | location), .)
+  lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+         pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + (1 | location), .) 
 
-# include total deaths
 model9 <- data %>% 
-  filter(!location == "Nicaragua") %>%
-  lmer(stringency_index ~ distrust_people + conf_govt + total_deaths_per_million +
-         log(conflict_index) + continent + deaths_per_mil_lag_5 +
-         log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index +
-         (1 | location), .)
+  lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+         pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + gini_disp + (1 | location), .) 
 
-
-
-texreg(list(model4, model5, model6, model7, model7_5, model8, model9), omit.coef = "Intercept", custom.model.names = c("Model 4", "Model 5", "Model 6", "Model 7", "Model 7.5", "Model 8", "Model 9"))
+htmlreg(list(pooled1, model1, model2, model3, model4, model5, model6, model7, model8, model9), omit.coef = "Intercept", 
+        include.aic = FALSE, include.bic = FALSE, include.loglik = FALSE)
 
 ```
 
 
-```{r time_plots, results='hide'}
-# model 4
-m4_time <- data %>% 
-  get_coefs(stringency_index ~ distrust_people + deaths_per_mil_lag_5 + res_chng_lag_34 +
-         conflict_index + continent + conf_govt +
-         log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index,
-         method = "lm", print_plot = FALSE, n_days = 1)
+```{r additional_analysis, results='asis', echo=TRUE}
+model10 <- data %>% 
+  lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+         pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + 
+         deaths_per_mil_lag_1 + (1 | location), .) 
+model11 <- data %>% 
+  lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+         pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + 
+         trans_chng_lag_15 + (1 | location), .)
+model12 <- data %>% 
+  lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+         pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + 
+         deaths_per_mil_lag_1 + trans_chng_lag_15 + (1 | location), .)
 
-m4_time$plot + 
-  labs(tag = "Model 4")
+model13 <- data %>% 
+  lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+         pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + 
+         deaths_per_mil_lag_1 + trans_chng_lag_15 + stringency_index_lag_1 + (1 | location), .)
 
-# model 6
-m6_time <- data %>% 
-  get_coefs(stringency_index ~ distrust_people + continent + deaths_per_mil_lag_5 + 
-         conflict_index + conf_govt +
-         log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index,
-         method = "lm", print_plot = FALSE, n_days = 1)
 
-m6_time$plot + 
-  labs(tag = "Model 6")
-
-# model 7, including Nicaragua
-m7_time <- data %>% 
-  get_coefs(stringency_index ~ distrust_people + deaths_per_mil_lag_5 + conf_govt + 
-         log(conflict_index) + continent +
-         log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index,
-         method = "lm", print_plot = FALSE, n_days = 1)
-
-m7_time$plot + 
-  labs(tag = "Model 7")
-
-# model 8
-m8_time <- data %>% 
-  get_coefs(stringency_index ~ distrust_people + conf_govt + total_deaths_per_million +
-         conflict_index + continent + deaths_per_mil_lag_5 +
-         log(gdp_per_capita) + ghs + pop.km2 + democracy_index + ethnic + education_index,
-         method = "lm", print_plot = FALSE, n_days = 1)
-
-m8_time$plot +
-  labs(tag = "Model 8")
-
+htmlreg(list(model8, model10, model11, model12, model13), omit.coef = "Intercept", 
+        custom.model.names = c("Model 9", "Model 11", "Model 12", "Model 13", "Model 14"), 
+        include.aic = FALSE, include.bic = FALSE, include.loglik = FALSE)
 ```
 
-Should I include use logged conflict instead of raw conflict\
+```{r other_policy, results='asis', echo=TRUE}
+model_response <- data %>% 
+  lmer(response_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+         pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + (1 | location), .)
+model_containment <- data %>% 
+  lmer(containment_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+         pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + (1 | location), .)
+model_support <- data %>% 
+  lmer(support_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+         pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + (1 | location), .)
 
 
-```{r logged_conflict}
+htmlreg(list(model8, model_containment, model_support, model_response), omit.coef = "^((?!distrust).)*$",
+        custom.model.names = c("Stringency", "Containment", "Support", "Response"), 
+        include.aic = FALSE, include.bic = FALSE, include.loglik = FALSE)
 
-data %>% plot_summarised(conflict_index, stringency_index) +
-  labs(title = "Relationship between raw conflict and stringency index")
-data %>% 
-  mutate(log_conflict = log(conflict_index)) %>% 
-  plot_summarised(log_conflict, stringency_index) +
-  labs(title = "Relationship between logged conflict and stringency index")
-
-data %>% plot_summarised(conflict_index, distrust_people) +
-  labs(title = "Relationship between raw conflict and distrust")
-data %>% 
-  mutate(log_conflict = log(conflict_index)) %>% 
-  plot_summarised(log_conflict, distrust_people) +
-  labs(title = "Relationship between logged conflict and distrust")
-
-min(data$conflict_index, na.rm = TRUE)
 ```
 
 

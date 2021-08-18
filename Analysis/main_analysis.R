@@ -25,6 +25,12 @@ my_theme <- theme_minimal() +
 
 theme_set(my_theme)
 
+data %>% 
+  select(location, date, stringency_index, distrust_people) %>% 
+  na.omit() %>% 
+  filter(is.infinite(stringency_index))
+is.nan(data_omit$distrust_people)
+
 ## Initial models
 # pooled regression clustered SE on location
 pooled1 <- data %>% 
@@ -54,55 +60,49 @@ screenreg(model1)
 
 # adding economic indicators
 model2 <- data %>% 
-  lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+  lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index + 
          (1 | location), .)
-screenreg(model2)
 
-# adding ghs (pandemic preparedness)
+# adding population over 65 and population density
 model3 <- data %>% 
   lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
-         ghs + (1 | location), .)
-screenreg(model3)
+         pop_65 + (1 | location), .)
 
-# adding population and polity
+
+# adding ghs
 model4 <- data %>% 
   lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
-         ghs + pop.km2 + polity2 + (1 | location), .)
-screenreg(model4)
+         pop_65 + ghs + (1 | location), .) 
 
-# add conflict
+
+# add polity
 model5 <- data %>% 
   lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
-         ghs + pop.km2 + polity2 + log_conflict + (1 | location), .)
-screenreg(model5)
+         pop_65 + ghs + polity2 + (1 | location), .)
 
-# include conf_govt
+
+# include conflict
 model6 <- data %>% 
   lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
-         ghs + pop.km2 + polity2 + log_conflict + conf_govt + pop_65 +
-         (1 | location), .)
+         pop_65 + ghs + polity2 + log_conflict + (1 | location), .) 
 
-screenreg(model6)
-dsum6 <- summary(model6)
-sum6$coefficients %>% 
-  as_tibble(rownames = "coef") %>% 
-  `colnames<-`(., tolower(make.names(colnames(.)))) 
-
-# inlcude lag_deaths
 model7 <- data %>% 
   lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
-         ghs + pop.km2 + polity2 + log_conflict + conf_govt + 
-         deaths_per_mil_lag_5 + (1 | location), .)
-screenreg(model7)
+         pop_65 + ghs + polity2 + log_conflict + pop.km2 + (1 | location), .) 
+
+model8 <- data %>% 
+  lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+         pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + (1 | location), .) 
+screenreg(model8)
+summary(model8)
 
 screenreg(list(model1, model2, model3, model4, model5, model6, model7))
 
 
-# include transport change
+# include gini
 model8 <- data %>% 
   lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
-         ghs + pop.km2 + polity2 + log_conflict + conf_govt + 
-         trans_chng_lag_28 + (1 | location), .)
+         pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + gini_disp + (1 | location), .) 
 screenreg(model8)
 
 model9 <- data %>% 

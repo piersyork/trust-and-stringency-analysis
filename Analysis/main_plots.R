@@ -90,16 +90,32 @@ data %>%
 data %>% 
   select(location, date, trusting, stringency_index) %>% 
   na.omit() %>% 
-  group_by(date) %>% #trusting, 
+  group_by(trusting, date) %>% #trusting, 
   summarise(stringency_index = mean(stringency_index)) %>% 
-  ggplot(aes(date, stringency_index)) + #, colour = factor(trusting)
+  ggplot(aes(date, stringency_index, colour = factor(trusting))) + #, colour = factor(trusting)
   geom_smooth(span = 0.01, se = FALSE, size = 0.5) +
   # geom_line() +
   scale_x_date(limits = c(as_date("2020-01-01"), as_date("2021-03-01")), 
                date_breaks = "10 weeks", date_labels = "%b %Y") +
   labs(title = "Stringency Index",
        x = "", y = "", colour = "",
-       caption = "Source: Our World in Data") +
+       caption = "Source: Oxford COVID-19 Government Response Tracker") +
+  ggsci::scale_color_lancet()
+
+# plot of financial support: 
+data %>% 
+  select(location, date, trusting, support_index) %>% 
+  na.omit() %>% 
+  group_by(trusting, date) %>% # 
+  summarise(support_index = mean(support_index)) %>% 
+  ggplot(aes(date, support_index, colour = factor(trusting))) + #, colour = factor(trusting)
+  geom_smooth(span = 0.01, se = FALSE, size = 0.5) +
+  # geom_line() +
+  scale_x_date(limits = c(as_date("2020-01-01"), as_date("2021-03-01")), 
+               date_breaks = "10 weeks", date_labels = "%b %Y") +
+  labs(title = "Economic Support Index",
+       x = "", y = "", colour = "",
+       caption = "Source: Oxford COVID-19 Government Response Tracker") +
   ggsci::scale_color_lancet()
 
 # plot of residential
@@ -163,9 +179,22 @@ data %>%
   plot_summarised(log_pop_km2, distrust_people)
 data %>% 
   plot_summarised(pop_65, stringency_index)
+data %>% 
+  plot_summarised(gini_disp, stringency_index)
 
 data %>% 
   plot_summarised(new_deaths_per_million, distrust_people)
+
+data %>% 
+  plot_summarised(new_deaths_per_million, distrust_people)
+data %>% 
+  plot_summarised(polity2, log_conflict)
+
+data %>%
+  select(trans_pct_chng, date, location) %>% 
+  na.omit() %>% 
+  use_series(date) %>% 
+  max()
 
 data %>% 
   select(location, distrust_people, conf_govt) %>% 
