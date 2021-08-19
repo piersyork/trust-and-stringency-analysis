@@ -24,9 +24,8 @@ my_theme <- theme_minimal() +
 
 theme_set(my_theme)
 
-.formula <- stringency_index ~ distrust_people + conf_govt + ghs + ethnic + pop.km2 + gdp_growth + 
-  log_gdp + log_conflict + deaths_per_mil_lag_5 + polity2 + education_index +
-  (1 | location)
+.formula <- stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+  pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + (1 | location)
 
 modelx <- lmer(.formula, data)
 screenreg(modelx)
@@ -78,12 +77,17 @@ tibble(fitted = fitted(model),
   # geom_smooth(colour = "#f7634c") +
   labs(x = "Fitted Values", y = "Standardised Residuals")
 
-HLMdiag::hlm_resid(model, level = 1, standardize = TRUE, include.ls = TRUE) %>% 
-  ggplot(aes(.ls.fitted, .std.ls.resid, colour = location)) + # sqrt(Mod(std.resid))
-  geom_point(alpha = 0.2, show.legend = FALSE) + # colour = "#01468B", 
-  geom_hline(yintercept = 0, colour = "#42B540", linetype = "dashed", size = 1) +
-  # geom_smooth(colour = "#f7634c") +
-  labs(x = "Fitted Values", y = "Standardised Residuals")
+perf_df <- HLMdiag::hlm_resid(model, level = "location", standardize = TRUE, include.ls = TRUE) 
+
+perf_df %>% 
+  ggplot(aes(.std.ranef.intercept, location)) +
+  geom_col(width = 0.4) +
+  geom_point()
+  # ggplot(aes(.ls.fitted, .std.ls.resid, colour = location)) + # sqrt(Mod(std.resid))
+  # geom_point(alpha = 0.2, show.legend = FALSE) + # colour = "#01468B", 
+  # geom_hline(yintercept = 0, colour = "#42B540", linetype = "dashed", size = 1) +
+  # # geom_smooth(colour = "#f7634c") +
+  # labs(x = "Fitted Values", y = "Standardised Residuals")
 
 data %>% 
   select(location, stringency_index, distrust_people) %>% 

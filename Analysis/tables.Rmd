@@ -1,9 +1,9 @@
 ---
-title: "current_thoughts/questions"
+title: "Analysis Tables"
 output: 
-  # pdf_document:
-  #   toc: yes
-  #   fig_caption: yes
+  pdf_document:
+    toc: yes
+    fig_caption: yes
   html_document:
     code_folding: hide
 ---
@@ -17,7 +17,7 @@ options(box.path = getwd())
 box::use(dplyr[...],
          ggplot2[...],
          lme4[lmer],
-         texreg[screenreg, htmlreg, texreg],
+         texreg[screenreg, htmlreg, texreg, knitreg],
          plm[plm],
          sandwich[vcovCL, vcovHC],
          lmtest[coeftest],
@@ -63,6 +63,8 @@ data %>%
   gtsummary::modify_header(list(label ~ "**Variable**")) %>%
   gtsummary::italicize_labels() %>%
   gtsummary::add_stat_label(label = list(gtsummary::all_continuous() ~ c("Mean (SD)"))) %>%
+  # gtsummary::as_tibble() %>% 
+  # knitr::kable(caption = "Summary Statistics")
   gtsummary::as_gt() %>%
   gt::tab_source_note(source_note = "SD = Standard Deviation")
 ```
@@ -121,7 +123,7 @@ model9 <- data %>%
   lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
          pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + gini_disp + (1 | location), .) 
 
-htmlreg(list(pooled1, model1, model2, model3, model4, model5, model6, model7, model8, model9), omit.coef = "Intercept", 
+knitreg(list(pooled1, model1, model2, model3, model4, model5, model6, model7, model8, model9), omit.coef = "Intercept", 
         include.aic = FALSE, include.bic = FALSE, include.loglik = FALSE)
 
 ```
