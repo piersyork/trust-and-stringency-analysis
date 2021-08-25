@@ -102,6 +102,14 @@ data %>%
        caption = "Source: Oxford COVID-19 Government Response Tracker") +
   ggsci::scale_color_lancet()
 
+data %>% 
+  select(location, date, trusting, stringency_index) %>% 
+  na.omit() %>% 
+  group_by(date) %>% 
+  summarise(sd = sd(stringency_index)) %>% 
+  ggplot(aes(date, sd)) +
+  geom_line()
+
 # plot of financial support: 
 data %>% 
   select(location, date, trusting, support_index) %>% 

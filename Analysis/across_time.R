@@ -22,6 +22,9 @@ lmer_time$plot +
   geom_point()
 
 lmer_time$df %>% 
+  arrange(desc(estimate))
+
+lmer_time$df %>% 
   ggplot(aes(date_start, nobs)) +
   geom_line()
 

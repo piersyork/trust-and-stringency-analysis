@@ -1,0 +1,22 @@
+\contentsline {section}{\numberline {1}Introduction}{1}{section.1}%
+\contentsline {section}{\numberline {2}Literature Review and Theory}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}The role of trust in society}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Trust and collective action}{2}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Trust and the Covid-19 pandemic}{4}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Hypothesis}{5}{subsection.2.4}%
+\contentsline {section}{\numberline {3}Research Design and data}{5}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Why random effects?}{5}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Data Sources}{7}{subsection.3.2}%
+\contentsline {section}{\numberline {4}Results and Discussion}{11}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Main Analysis}{11}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Effect of distrust over time}{12}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Including other low-level variables}{14}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Other policy measures}{15}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}Discussion}{16}{subsection.4.5}%
+\contentsline {section}{\numberline {5}Limitations and Assumptions}{17}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Selection bias}{17}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Number of Countries}{18}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Statistical Assumptions}{19}{subsection.5.3}%
+\contentsline {section}{\numberline {6}Conclusion}{19}{section.6}%
+\contentsline {section}{References}{21}{section.6}%
+\contentsline {section}{Appendix}{22}{section.6}%

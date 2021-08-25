@@ -35,7 +35,7 @@ get_coefs = function(data, .formula, start = "2020-04-01", n_days = 4,
       nobs <- model_sum$ngrps
       
       estimate <- coefficients[coef_position, 1]
-      print(paste(estimate, " | ", weekly_dates[[i]]))
+      if (print_plot) print(paste(estimate, " | ", weekly_dates[[i]]))
       std_err <- coefficients[coef_position, 2]
       estimates[[i]] <- tibble(estimate = estimate, std_err = std_err, nobs = nobs)
     }
@@ -48,7 +48,7 @@ get_coefs = function(data, .formula, start = "2020-04-01", n_days = 4,
         coeftest(vcovCL, cluster = data$location[data$date %in% c(weekly_dates[[i]] + 0:(n_days-1))])
       
       estimate <- coefficients[coef_position, 1]
-      print(paste(estimate, " | ", weekly_dates[[i]]))
+      if (print_plot) print(paste(estimate, " | ", weekly_dates[[i]]))
       std_err <- coefficients[coef_position, 2]
       estimates[[i]] <- tibble(estimate = estimate, std_err = std_err)
     }
@@ -140,7 +140,7 @@ load_project_data = function() {
            stringency_index_lag_7 = lag(stringency_index, 7),
            max_stringency = max(stringency_index, na.rm = TRUE)) %>% 
     ungroup() %>%  
-    mutate(trusting = ifelse(distrust_people < stats::median(distrust_people), "High trust", "Low trust"),
+    mutate(trusting = ifelse(distrust_people < stats::median(distrust_people), "Low Distrust", "High Distrust"),
            distrust_people = distrust_people * 100,
            conf_govt = conf_govt * 100) 
   
@@ -236,7 +236,7 @@ plot_summarised = function(data, x, y, .poly = 1) {
               var_y = mean(!!y)) %>% 
     ggplot(aes(var_x, var_y, label = location)) +
     geom_point() +
-    geom_smooth(method = lm, formula = y ~ poly(x, .poly, raw = TRUE)) +
+    geom_smooth(method = lm, formula = y ~ poly(x, .poly, raw = TRUE), colour = "#01468B") +
     labs(x = as_label(x), y = as_label(y))
 }
 # data %>% 

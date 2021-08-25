@@ -1,0 +1,50 @@
+---
+title: "Analysis Tables"
+output: 
+  # pdf_document:
+  #   toc: yes
+  #   fig_caption: yes
+  bookdown::html_document2
+    # code_folding: hide
+---
+
+```{r setup, results='hide', warning=FALSE, message=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+# set wd as rproj folder
+# setwd("../")
+# import functions
+options(box.path = getwd())
+box::use(dplyr[...],
+         ggplot2[...],
+         lme4[lmer],
+         texreg[screenreg, htmlreg, texreg, knitreg],
+         plm[plm],
+         sandwich[vcovCL, vcovHC],
+         lmtest[coeftest],
+         lubridate[date],
+         magrittr[use_series, extract],
+         readr[read_csv],
+         # import own project functions
+         functions/ts[...])
+
+load_project_data()
+
+my_theme <- theme_minimal() +
+  theme(legend.position = "top",
+        axis.line.x = element_line(), axis.ticks.x = element_line(),
+        plot.caption = element_text(hjust = 0),
+        plot.tag.position = "topright", plot.tag = element_text(face = "bold"))
+
+theme_set(my_theme)
+
+```
+
+```{r table}
+model9 <- data %>% 
+  lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+         pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + gini_disp + (1 | location), .) 
+texreg::matrixreg(model9) %>% 
+  as_tibble() %>% 
+  knitr::kable()
+```
+

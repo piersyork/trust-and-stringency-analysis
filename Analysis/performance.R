@@ -63,7 +63,13 @@ screenreg(model)
 plot_vif(model) +
   theme(axis.text.x = element_text(size = 11))
 
-plot_homogeneity(model)
+data %>% 
+  filter(!location == "Ukraine") %>% 
+  lmer(.formula, .) %>% 
+  screenreg()
+
+plot_homogeneity(model) +
+  geom_smooth()
 
 box::use(dplyr[...],
          HLMdiag[pull_resid],

@@ -1,15 +1,20 @@
 ---
 title: "Analysis Tables"
 output: 
-  pdf_document:
-    toc: yes
+  bookdown::pdf_document2:
+    toc: no
     fig_caption: yes
-  html_document:
-    code_folding: hide
+    keep_tex: yes
+    # latex_engine: xelatex
+  bookdown::html_document2:
+    # code_folding: hide
+header-includes:
+  - \usepackage{rotating}
 ---
 
 ```{r setup, results='hide', warning=FALSE, message=FALSE, echo=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+options(tinytex.verbose = TRUE)
 # set wd as rproj folder
 setwd("../")
 # import functions
@@ -24,6 +29,7 @@ box::use(dplyr[...],
          lubridate[date],
          magrittr[use_series, extract],
          readr[read_csv],
+         broom[tidy],
          # import own project functions
          functions/ts[...])
 
@@ -39,38 +45,66 @@ theme_set(my_theme)
 
 ```
 
-```{r summary}
+
+
+
+Table \@ref(tab:stats) shows summary statistics for each variable, Table \@ref(tab:main) shows the main regression models for the paper, Table \@ref(tab:addit) shows the models with deaths and transport adjusted for, and Table \@ref(tab:policy) shows the other policy measures as the outcome variable.
+
+```{r stats}
+
+
+
 data %>% 
   select(distrust_people, log_gdp, gdp_growth, education_index, log_conflict, conf_govt, polity2,
          pop.km2, pop_65, ghs, gini_disp) %>% 
   distinct() %>% 
-  gtsummary::tbl_summary(
-    type = gtsummary::all_continuous() ~ "continuous2",
-    statistic = list(gtsummary::all_continuous() ~ c("{mean} ({sd})")),
-    missing_text = "Missing Data",
-    label = list(distrust_people ~ "Distrust in People",
-                 log_gdp ~ "Log of GDP per Capita",
-                 gdp_growth ~ "GDP Growth",
-                 log_conflict ~ "Log of Conflict Index",
-                 education_index ~ "Education Index", 
-                 conf_govt ~ "Confidence in Government", 
-                 polity2 ~ "Polity",
-                 pop.km2 ~ "Population Density (per km2)", 
-                 pop_65 ~ "Population over age 65", 
-                 ghs ~ "Global Health Security Index",
-                 gini_disp ~ "Gini Coefficient")
-  ) %>%
-  gtsummary::modify_header(list(label ~ "**Variable**")) %>%
-  gtsummary::italicize_labels() %>%
-  gtsummary::add_stat_label(label = list(gtsummary::all_continuous() ~ c("Mean (SD)"))) %>%
-  # gtsummary::as_tibble() %>% 
-  # knitr::kable(caption = "Summary Statistics")
-  gtsummary::as_gt() %>%
-  gt::tab_source_note(source_note = "SD = Standard Deviation")
+  tidy() %>% 
+  mutate(across(where(is.double), round, 2),
+         mean_sd = paste0(mean, " (", sd, ")"),
+         Variable = recode(column,
+                           "distrust_people" = "Distrust in People",
+                           "log_gdp" = "Log of GDP per Capita",
+                           "gdp_growth" = "GDP Growth",
+                           "log_conflict" = "Log of Conflict Index",
+                           "education_index" = "Education Index",
+                           "conf_govt" = "Confidence in Government",
+                           "polity2" = "Polity",
+                           "pop.km2" = "Population Density (per km2)",
+                           "pop_65" = "Population over age 65",
+                           "ghs" = "Global Health Security Index",
+                           "gini_disp" = "Gini Coefficient")) %>% 
+  select(Variable, `Mean (SD)` = mean_sd) %>% 
+  knitr::kable(caption = "Summary statistics of each high-level variable")
+
+
+
+
+  # gtsummary::tbl_summary(
+  #   type = gtsummary::all_continuous() ~ "continuous2",
+  #   statistic = list(gtsummary::all_continuous() ~ c("{mean} ({sd})")),
+  #   missing_text = "Missing Data",
+  #   label = list(distrust_people ~ "Distrust in People",
+  #                log_gdp ~ "Log of GDP per Capita",
+  #                gdp_growth ~ "GDP Growth",
+  #                log_conflict ~ "Log of Conflict Index",
+  #                education_index ~ "Education Index", 
+  #                conf_govt ~ "Confidence in Government", 
+  #                polity2 ~ "Polity",
+  #                pop.km2 ~ "Population Density (per km2)", 
+  #                pop_65 ~ "Population over age 65", 
+  #                ghs ~ "Global Health Security Index",
+  #                gini_disp ~ "Gini Coefficient")
+  # ) %>%
+  # gtsummary::modify_header(list(label ~ "**Variable**")) %>%
+  # gtsummary::italicize_labels() %>%
+  # gtsummary::add_stat_label(label = list(gtsummary::all_continuous() ~ c("Mean (SD)"))) %>%
+  # # gtsummary::as_tibble() %>% 
+  # # knitr::kable(caption = "Summary Statistics")
+  # gtsummary::as_kable(caption = "Summary statistics of each high-level variable")
 ```
 
 
-```{r main_analysis, results='asis', echo=TRUE}
+```{r main-analysis, results='asis', cache=TRUE}
 
 ## Initial models
 # pooled regression clustered SE on location
@@ -79,82 +113,95 @@ pooled1 <- data %>%
   coeftest(., vcovCL, cluster = ~location)
 
 # simple random effects model
-model1 <- data %>% 
+model2 <- data %>% 
   lmer(stringency_index ~ distrust_people + (1 | location), .)
 
 
 # adding economic indicators
-model2 <- data %>% 
+model3 <- data %>% 
   lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index + 
          (1 | location), .)
 
 # adding population over 65 and population density
-model3 <- data %>% 
+model4 <- data %>% 
   lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
          pop_65 + (1 | location), .)
 
 
 # adding ghs
-model4 <- data %>% 
+model5 <- data %>% 
   lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
          pop_65 + ghs + (1 | location), .) 
 
 
 # add polity
-model5 <- data %>% 
+model6 <- data %>% 
   lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
          pop_65 + ghs + polity2 + (1 | location), .) 
 
 
 # include conflict
-model6 <- data %>% 
+model7 <- data %>% 
   lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
          pop_65 + ghs + polity2 + log_conflict + (1 | location), .) 
 
-model7 <- data %>% 
+model8 <- data %>% 
   lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
          pop_65 + ghs + polity2 + log_conflict + pop.km2 + (1 | location), .) 
 
-model8 <- data %>% 
+model9 <- data %>% 
   lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
          pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + (1 | location), .) 
 
-model9 <- data %>% 
+model10 <- data %>% 
   lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
          pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + gini_disp + (1 | location), .) 
 
-knitreg(list(pooled1, model1, model2, model3, model4, model5, model6, model7, model8, model9), omit.coef = "Intercept", 
-        include.aic = FALSE, include.bic = FALSE, include.loglik = FALSE)
+pooled11 <- data %>% 
+  lm(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+         pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt, .) %>% 
+  coeftest(., vcovCL, cluster = ~location)
+  
+
+# gtsummary::tbl_regression(model9)
+
+knitreg(list(pooled1, model2, model3, model4, model5, model6, model7, model8, model9, model10, pooled11),
+        omit.coef = "Intercept", include.aic = FALSE, include.bic = FALSE, include.loglik = FALSE, 
+        custom.gof.rows = list("Randome Effects" = c("  No", rep("  Yes", 9), "  No")),
+        caption = "Main Statistical Models", caption.above = TRUE, label = "tab:main",
+        sideways = TRUE)
 
 ```
 
 
-```{r additional_analysis, results='asis', echo=TRUE}
-model10 <- data %>% 
+```{r additional-analysis, results='asis'}
+model12 <- data %>% 
   lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
          pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + 
          deaths_per_mil_lag_1 + (1 | location), .) 
-model11 <- data %>% 
+model13 <- data %>% 
   lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
          pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + 
          trans_chng_lag_15 + (1 | location), .)
-model12 <- data %>% 
+model14 <- data %>% 
   lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
          pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + 
          deaths_per_mil_lag_1 + trans_chng_lag_15 + (1 | location), .)
 
-model13 <- data %>% 
+model15 <- data %>% 
   lmer(stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
          pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + 
          deaths_per_mil_lag_1 + trans_chng_lag_15 + stringency_index_lag_1 + (1 | location), .)
 
 
-htmlreg(list(model8, model10, model11, model12, model13), omit.coef = "Intercept", 
-        custom.model.names = c("Model 9", "Model 11", "Model 12", "Model 13", "Model 14"), 
-        include.aic = FALSE, include.bic = FALSE, include.loglik = FALSE)
+knitreg(list(model9, model12, model13, model14), omit.coef = "Intercept", 
+        custom.model.names = c("Model 9", "Model 12", "Model 13", "Model 14"), 
+        include.aic = FALSE, include.bic = FALSE, include.loglik = FALSE, 
+        caption = "Models including deaths and transport change", caption.above = TRUE,
+        label = "tab:addit")
 ```
 
-```{r other_policy, results='asis', echo=TRUE}
+```{r other-policy, results='asis'}
 model_response <- data %>% 
   lmer(response_index ~ distrust_people + log_gdp + gdp_growth + education_index +
          pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + (1 | location), .)
@@ -171,9 +218,11 @@ model_support <- data %>%
 #   
 
 
-htmlreg(list(model8, model_containment, model_support, model_response), omit.coef = "^((?!distrust).)*$",
+knitreg(list(model9, model_containment, model_support, model_response), omit.coef = "^((?!distrust).)*$",
         custom.model.names = c("Stringency", "Containment", "Support", "Response"), 
-        include.aic = FALSE, include.bic = FALSE, include.loglik = FALSE)
+        include.aic = FALSE, include.bic = FALSE, include.loglik = FALSE, 
+        caption = "Models with different policy measures", caption.above = TRUE,
+        label = "tab:policy")
 
 ```
 

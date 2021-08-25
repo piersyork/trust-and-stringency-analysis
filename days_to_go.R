@@ -1,5 +1,9 @@
+
+box::use(magrittr[use_series],
+         dplyr[...])
+
 today <- Sys.Date()
-done_by <- as.Date("2021-08-27")
+done_by <- as.Date("2021-08-24")
 days_to_go <- as.numeric(done_by - today)
 
 word_count <- function(con) {
@@ -7,9 +11,7 @@ word_count <- function(con) {
   split_con <- stringr::str_split(con, "")[[1]]
   
   if (!split_con[length(split_con)] == "/") {
-    all_words <- officer::read_docx(con) %>% 
-      officer::docx_summary() %>% 
-      use_series(text) %>% 
+    all_words <- qdapTools::read_docx(con) %>% 
       paste(collapse = "") %>% 
       # stringr::str_remove_all("\\sCITATION[\\s](\\d|[a-zA-Z]){1,10}\\s\\\\[a-z]\\s\\d{4}\\s?") %>% print() %>% 
       stringr::str_split(" ") %>% 
@@ -36,21 +38,49 @@ total_words <- word_count("../Write Up/Introduction.docx") +
   word_count(con = "../Write Up/Literature Review.docx") +
   word_count("../Write Up/Research Design.docx") +
   word_count("../Write Up/Results.docx") +
-  word_count("../Write Up/Limitations.docx")
+  word_count("../Write Up/Limitations.docx") +
+  word_count("../Write Up/Conclusion.docx")
 total_words <- word_count("../Write Up/")
 
 word_count("../Write Up/")
 
-word_count(con = "/Users/piers/Google Drive/Philosophy/Year 3/Semester 2/Moral, Rational Selves/")
+
+
 words_per_day <- (8000 - word_count("../Write Up/")) / days_to_go # words needed per day
+
+
 
 words_per_day
 
 (1161 + 685 + 506 + 2129)  # 17/08
 
-(450 + 685 + 1359 + 2146 + 406)
+(450 + 685 + 1359 + 2146 + 406) # 18/08
+
+# 5980 - 21/08
 
 
+intro_raw <- officer::read_docx("../Write Up/Introduction.docx")
+intro_text <- officer::docx_summary(intro_raw)$text
+
+package_dir <- tempfile()
+unpack_folder(file = "../Write Up/Introduction.docx", folder = package_dir)
+
+intro_raw$doc_obj$
+
+officer::docx_(intro_raw) 
+
+intro_sum$text
+
+qdapTools::read_docx("../Write Up/Research Design.docx")
+
+
+
+
+
+intro$default_styles$numbering
+
+
+ran_data <- owidR::owid()
 
 
 

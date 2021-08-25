@@ -18,12 +18,21 @@ load_project_data()
   pop.km2 + continent + education_index + log_gdp + log_conflict + 
   deaths_per_mil_lag_5 + (1 | location)
 
-.formula <- stringency_index ~ distrust_people + conf_govt + ghs + ethnic + pop.km2 + gdp_growth + 
-  log_gdp + log_conflict + deaths_per_mil_lag_5 + polity2 + education_index +
-  (1 | location)
+.formula <- stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
+  pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + (1 | location)
 
 vars <- c("deaths_per_mil_lag_5", "conf_govt", "ghs", "pop.km2", "education_index",
           "polity2", "ethnic", "log_gdp", "log_conflict", "gdp_growth")
+
+## new comparison: basic model but with the countries that are omitted from the main model omitted from the 
+## basic model
+model_x <- lmer(stringency_index ~ distrust_people + (1 | location), data)
+model_y <- lmer(.formula, data)
+model_z <- data %>% 
+  select(all_of(all.vars(.formula))) %>% 
+  na.omit() %>% 
+  lmer(stringency_index ~ distrust_people + (1 | location), .)
+screenreg(list(model_x, model_z, model_y))
 
 data$location %>% unique()
 

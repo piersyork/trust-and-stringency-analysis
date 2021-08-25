@@ -387,6 +387,7 @@ data %>%
   na.omit() %>% 
   select(location, distrust_people) %>% 
   distinct() %>% 
+  arrange(distrust_people) %>% 
   print(n = 100) %>% 
   use_series(distrust_people) %>% 
   range()
