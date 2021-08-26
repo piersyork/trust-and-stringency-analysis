@@ -102,13 +102,20 @@ data %>%
        caption = "Source: Oxford COVID-19 Government Response Tracker") +
   ggsci::scale_color_lancet()
 
+my_stats <- function(x) {
+  tibble(mean = mean(x), sd = sd(x))
+}
+
 data %>% 
-  select(location, date, trusting, stringency_index) %>% 
+  select(location, date, stringency_index) %>% 
   na.omit() %>% 
   group_by(date) %>% 
-  summarise(sd = sd(stringency_index)) %>% 
+  summarise(my_stats(stringency_index)) %>% 
   ggplot(aes(date, sd)) +
-  geom_line()
+  geom_line() +
+  # geom_line(aes(date, mean)) +
+  scale_x_date(limits = c(as_date("2020-01-01"), as_date("2021-03-01")), 
+               date_breaks = "10 weeks", date_labels = "%b %Y") 
 
 # plot of financial support: 
 data %>% 

@@ -46,7 +46,7 @@ word_count("../Write Up/")
 
 
 
-words_per_day <- (8000 - word_count("../Write Up/")) / days_to_go # words needed per day
+words_per_day <- ( 8000 - word_count("../Write Up/")) / days_to_go # words needed per day
 
 
 
@@ -71,7 +71,9 @@ officer::docx_(intro_raw)
 
 intro_sum$text
 
-qdapTools::read_docx("../Write Up/Research Design.docx")
+qdapTools::read_docx("../Write Up/Research Design.docx") %>% 
+  stringr::str_remove_all("\\sCITATION[\\s](\\d|[a-zA-Z]){1,10}") %>% 
+  stringr::str_remove_all("\\s\\\\[a-z]\\s(\\d|[a-zA-Z]){1,10}") #\\s\\d{4}\\s?
 
 
 
