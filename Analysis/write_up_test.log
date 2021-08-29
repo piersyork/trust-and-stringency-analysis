@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2022/dev) (preloaded format=pdflatex 2021.8.22)  25 AUG 2021 22:50
+This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2022/dev) (preloaded format=pdflatex 2021.8.22)  26 AUG 2021 20:57
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -870,7 +870,7 @@ piers/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy8.pfb></Users/piers/
 Library/TinyTeX/texmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb></Users/piers/Li
 brary/TinyTeX/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></Users/piers/Libr
 ary/TinyTeX/texmf-dist/fonts/type1/urw/helvetic/uhvro8a.pfb>
-Output written on write_up_test.pdf (29 pages, 260491 bytes).
+Output written on write_up_test.pdf (29 pages, 260490 bytes).
 PDF statistics:
  452 PDF objects out of 1000 (max. 8388607)
  369 compressed objects within 4 object streams

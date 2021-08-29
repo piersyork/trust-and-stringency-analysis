@@ -115,7 +115,9 @@ data %>%
   geom_line() +
   # geom_line(aes(date, mean)) +
   scale_x_date(limits = c(as_date("2020-01-01"), as_date("2021-03-01")), 
-               date_breaks = "10 weeks", date_labels = "%b %Y") 
+               date_breaks = "10 weeks", date_labels = "%b %Y")
+
+
 
 # plot of financial support: 
 data %>% 
