@@ -46,6 +46,7 @@ word_count("../Write Up/")
 
 
 
+
 words_per_day <- ( 8000 - word_count("../Write Up/")) / days_to_go # words needed per day
 
 

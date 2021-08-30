@@ -121,7 +121,7 @@ map_data <- readRDS("Map Data/map_data.rds") %>%
 map_data %>% 
   ggplot(aes(fill = factor(sample))) +
   geom_sf(show.legend = FALSE, colour = "white", size = 0.05) + #color = "black", size = 0.1, 
-  scale_fill_manual(values = c("grey", "black")) + #"#deebf7", "#3182bd"
+  scale_fill_manual(values = c("grey", "#01468B")) + #"#deebf7", "#3182bd"
   # scale_fill_brewer(direction = 1) +
   theme_void() +
   theme(plot.title = element_text(hjust = 0.05),

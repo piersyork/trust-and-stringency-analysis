@@ -102,6 +102,9 @@ data %>%
        caption = "Source: Oxford COVID-19 Government Response Tracker") +
   ggsci::scale_color_lancet()
 
+
+median(data$distrust_people)
+
 my_stats <- function(x) {
   tibble(mean = mean(x), sd = sd(x))
 }

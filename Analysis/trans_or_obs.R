@@ -14,6 +14,8 @@ box::use(dplyr[...],
 # imports data for the project (function defined in functions/ts.r)
 load_project_data()
 
+vars <- c("deaths_per_mil_lag_5", "conf_govt", "ghs", "pop.km2", "education_index",
+          "polity2", "ethnic", "log_gdp", "log_conflict", "gdp_growth")
 .formula <- stringency_index ~ distrust_people + conf_govt + ghs + ethnic + regime_type + 
   pop.km2 + continent + education_index + log_gdp + log_conflict + 
   deaths_per_mil_lag_5 + (1 | location)
@@ -21,8 +23,6 @@ load_project_data()
 .formula <- stringency_index ~ distrust_people + log_gdp + gdp_growth + education_index +
   pop_65 + ghs + polity2 + log_conflict + pop.km2 + conf_govt + (1 | location)
 
-vars <- c("deaths_per_mil_lag_5", "conf_govt", "ghs", "pop.km2", "education_index",
-          "polity2", "ethnic", "log_gdp", "log_conflict", "gdp_growth")
 
 ## new comparison: basic model but with the countries that are omitted from the main model omitted from the 
 ## basic model

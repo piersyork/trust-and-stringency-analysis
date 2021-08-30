@@ -122,7 +122,7 @@ plot_dfbetas <- function(model) {
     ggplot(aes(dfbetas, forcats::fct_reorder(location, dfbetas), fill = is_sig)) +
     geom_col(show.legend = FALSE) +
     scale_fill_manual(values = c("FALSE" = "#ED2201", "TRUE" = "#42B540")) +
-    labs(title = "DFBETAS", x = "", y = "", fill = "Is Significant", 
+    labs(x = "", y = "", fill = "Is Significant", 
          caption = "Note: Green indicates that without that location the model coefficient is significant, \nred indicates that it is insignificant.") +
     theme(legend.position = "bottom")
 }
