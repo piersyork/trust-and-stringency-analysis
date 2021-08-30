@@ -6,7 +6,8 @@ box::use(dplyr[...],
          lmtest[coeftest],
          readr[read_csv],
          # import own project functions
-         functions/ts[get_coefs, load_project_data, test_lag])
+         functions/ts[get_coefs, load_project_data, test_lag],
+         box[help])
 
 load_project_data()
 

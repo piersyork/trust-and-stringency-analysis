@@ -1,6 +1,19 @@
 
 ## function to get coefficients over specified time period across the year. Outputs a plot and df 
 ## showing how the coefficient changes over time.
+#' @param data the data
+#'
+#' @param .formula a formula suitable for lm if method = "lm" or lmer if method = "lmer"
+#' @param start The start date for which to begin model estimation
+#' @param n_days number of days included in each model
+#' @param method either "lm" or "lmer"
+#' @param coef_position The position of the coeficient in the formula to be estimated
+#' @param .labs include labels in plot
+#' @param print_plot logical. If TRUE then plot is printed on completion
+#' @param ... Args passed to lmer
+#' 
+#' @return A list including a ggplot plot and a dataframe of values
+#'
 #' @export
 get_coefs = function(data, .formula, start = "2020-04-01", n_days = 4, 
                      method = "lmer", coef_position = 2, .labs = NULL,
@@ -12,7 +25,6 @@ get_coefs = function(data, .formula, start = "2020-04-01", n_days = 4,
            ggplot2[...],
            magrittr[use_series, extract],
            sandwich[vcovCL, vcovHC],
-           miceadds[lm.cluster],
            dplyr[...],
            stats[lm, median, na.omit])
   if (!plyr::is.formula(.formula)) {
@@ -60,11 +72,11 @@ get_coefs = function(data, .formula, start = "2020-04-01", n_days = 4,
   
   plot <- df_estimates %>% 
     ggplot(aes(date_start, estimate)) +
-    geom_hline(yintercept = 0, linetype = "dashed") +
-    geom_line() +
     geom_ribbon(aes(ymin = estimate - std_err * 1.96,
                     ymax = estimate + std_err * 1.96), 
                 alpha = 0.3, fill = "blue") +
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_line() +
     theme_minimal() +
     theme(axis.title = element_blank(),
           plot.caption = element_text(hjust = 0))
@@ -87,7 +99,11 @@ get_coefs = function(data, .formula, start = "2020-04-01", n_days = 4,
 }
 
 
-## function to import data for project
+
+
+#' Load Project data
+#'
+#' @return No object returned, calling the function loads the data into environment
 #' @export
 load_project_data = function() {
   box::use(dplyr[...],
@@ -121,6 +137,7 @@ load_project_data = function() {
            res_chng_lag_29 = lag(res_pct_chng, 29),
            res_chng_lag_34 = lag(res_pct_chng, 34),
            res_chng_lag_40 = lag(res_pct_chng, 40),
+           trans_chng_lag_1 = lag(trans_pct_chng, 1),
            trans_chng_lag_5 = lag(trans_pct_chng, 5),
            trans_chng_lag_6 = lag(trans_pct_chng, 6),
            trans_chng_lag_7 = lag(trans_pct_chng, 7),
@@ -145,31 +162,41 @@ load_project_data = function() {
            conf_govt = conf_govt * 100) 
   
   
-  weekly_data <<- read_csv("Data/weekly_data.csv") %>% 
-    group_by(location) %>% 
-    arrange(date) %>% 
-    mutate(log_gdp = log(gdp_per_capita),
-           log_conflict = log(conflict_index),
-           excess_lag_1 = lag(excess_deaths_per_100k, 1),
-           excess_lag_2 = lag(excess_deaths_per_100k, 2),
-           excess_lag_3 = lag(excess_deaths_per_100k, 3),
-           excess_lag_4 = lag(excess_deaths_per_100k, 4),
-           res_chng_lag_1 = lag(res_pct_chng, 1),
-           res_chng_lag_2 = lag(res_pct_chng, 2),
-           res_chng_lag_3 = lag(res_pct_chng, 3),
-           res_chng_lag_4 = lag(res_pct_chng, 4),
-           stringency_index_lag_1 = lag(stringency_index, 1),
-           stringency_index_lag_2 = lag(stringency_index, 2),
-           stringency_index_lag_3 = lag(stringency_index, 3),
-           stringency_index_lag_4 = lag(stringency_index, 4),
-           deaths_per_100_lag_1 = lag(daily_deaths_100k, 1),
-           deaths_per_100_lag_2 = lag(daily_deaths_100k, 2),
-           deaths_per_100_lag_3 = lag(daily_deaths_100k, 3),
-           deaths_per_100_lag_4 = lag(daily_deaths_100k, 4)) %>% 
-    ungroup()
+  # weekly_data <<- read_csv("Data/weekly_data.csv") %>% 
+  #   group_by(location) %>% 
+  #   arrange(date) %>% 
+  #   mutate(log_gdp = log(gdp_per_capita),
+  #          log_conflict = log(conflict_index),
+  #          excess_lag_1 = lag(excess_deaths_per_100k, 1),
+  #          excess_lag_2 = lag(excess_deaths_per_100k, 2),
+  #          excess_lag_3 = lag(excess_deaths_per_100k, 3),
+  #          excess_lag_4 = lag(excess_deaths_per_100k, 4),
+  #          res_chng_lag_1 = lag(res_pct_chng, 1),
+  #          res_chng_lag_2 = lag(res_pct_chng, 2),
+  #          res_chng_lag_3 = lag(res_pct_chng, 3),
+  #          res_chng_lag_4 = lag(res_pct_chng, 4),
+  #          stringency_index_lag_1 = lag(stringency_index, 1),
+  #          stringency_index_lag_2 = lag(stringency_index, 2),
+  #          stringency_index_lag_3 = lag(stringency_index, 3),
+  #          stringency_index_lag_4 = lag(stringency_index, 4),
+  #          deaths_per_100_lag_1 = lag(daily_deaths_100k, 1),
+  #          deaths_per_100_lag_2 = lag(daily_deaths_100k, 2),
+  #          deaths_per_100_lag_3 = lag(daily_deaths_100k, 3),
+  #          deaths_per_100_lag_4 = lag(daily_deaths_100k, 4)) %>% 
+  #   ungroup()
 }
 
-## function to test effect of variable at various time lags
+
+#' Test how increasing lag effects a coef
+#'
+#' @param data The dataframe
+#' @param .formula a formula suitable for lm if method = "lm" or lmer if method = "lmer"
+#' @param n_lag How many days of lag to estimate up to
+#' @param lag_var Which coef too estimate for
+#' @param method either "lm" or "lmer"
+#' @param ... Args passed on to lmer
+#'
+#' @return A list including a ggplot plot and a dataframe of values
 #' @export
 test_lag = function(data, .formula, n_lag = 30, lag_var,
                     method = "lmer", ...) {
@@ -220,7 +247,16 @@ test_lag = function(data, .formula, n_lag = 30, lag_var,
   return(output)
 }
 
-## function to plot relationship between two variables using averaged level for timeseries variables
+
+
+#' Plot the relationship between to variables
+#'
+#' @param data The dataframe
+#' @param x x axis variable
+#' @param y y axis variable
+#' @param .poly the polynomial to be used
+#'
+#' @return A ggplot plot. If a time-variant variable is plotted then it will be averaged to the country level
 #' @export
 plot_summarised = function(data, x, y, .poly = 1) {
   box::use(dplyr[...],
@@ -235,13 +271,21 @@ plot_summarised = function(data, x, y, .poly = 1) {
     summarise(var_x = mean(!!x), 
               var_y = mean(!!y)) %>% 
     ggplot(aes(var_x, var_y, label = location)) +
-    geom_point() +
-    geom_smooth(method = lm, formula = y ~ poly(x, .poly, raw = TRUE), colour = "#01468B") +
+    geom_point(colour = "#00468B") +
+    geom_smooth(method = lm, formula = y ~ poly(x, .poly, raw = TRUE), colour = "#42B540") +
     labs(x = as_label(x), y = as_label(y))
 }
 # data %>% 
 #   plot_summarised(conf_govt, stringency_index)
 
+
+#' Plot a sample map (no longer used)
+#'
+#' @param data 
+#' @param map_tidy 
+#' @param .formula 
+#'
+#' @return
 #' @export
 plot_sample_map = function(data, map_tidy, .formula) {
   box::use(dplyr[...],
@@ -302,6 +346,12 @@ effective_sample = function(data, .formula, model = NULL) {
   
 }
 
+
+#' Create a dataframe of the countries in sample and what continent they belong to
+#'
+#' @param data 
+#'
+#' @return
 #' @export
 table_continents <- function(data) {
   box::use(dplyr[...])
