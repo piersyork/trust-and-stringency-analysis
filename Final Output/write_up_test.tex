@@ -127,7 +127,7 @@
 Candidate Number: KFHH0
 
 \vspace{0.5cm}
-Word Count: 8282
+Word Count: 8678
 
 \vfill
 
@@ -154,7 +154,7 @@ To my parents for their constant support.
 \vspace*{5cm}
 \textbf{Abstract}
 \end{center}
-Since Covid-19 spread across the world, governments have sought to control it through imposing strict restrictions on their citizens, from work-place closures to stay at home orders and curfews. But the stringency of these responses has varied across countries, with some like Belarus having very few restrictions and others, like New Zealand, having incredibly strict responses. This paper explains these differences in response by treating the pandemic as a collective action problem and arguing that distrust in other people has played an important role in how countries attempt to solve this collective action problem, with higher levels of distrust creating a demand for intervention from the government. By using a random effects regression analysis, this paper finds that higher levels of distrust leads to higher levels of stringency during the pandemic. Further analysis finds that this effect has changed over the course of the pandemic, with a stronger effect as the pandemic has gone on.
+Since Covid-19 spread across the world, governments have sought to control it through imposing strict restrictions on their citizens, from work-place closures to stay at home orders and curfews. But the stringency of these responses has varied across countries, with some like Belarus having very few restrictions and others, like New Zealand, having incredibly strict responses. This paper explains these differences in response by treating the pandemic as a collective action problem. It argues that distrust in other people has played an important role in how countries attempt to solve this collective action problem, with higher levels of distrust creating a demand for intervention from the government. By using a random effects regression analysis, this paper finds that higher levels of distrust leads to higher levels of government stringency during the pandemic. Further analysis finds that this effect has changed over the course of the pandemic, with a stronger effect as the pandemic has gone on.
 \pagenumbering{gobble} 
 \pagebreak
 
@@ -347,16 +347,64 @@ Figure \ref{fig:over-time} shows how the effect of distrust has changed over the
 \hypertarget{including-other-low-level-variables}{%
 \subsection{Including other low-level variables}\label{including-other-low-level-variables}}
 
-Table \ref{tab:addit} shows a table of models which include percentage change in transport and new deaths per million, comparing them to Model 9 which is the main model in this paper. A lagged version of both variables is used because the effect that either has on government stringency is likely to take time. For instance, when new deaths increase to a level where a government wants to increase the stringency of restrictions the process of introducing a new policy may take time. How many days of lag to use is calculated by creating multiple models with a lag from 1 to 50 days and using the days of lag for which there is the strongest association between the coefficient and government stringency. All of these models control for the same variables as in Model 9. Figure \ref{fig:lag-deaths} shows how increasing days of lag affects the association for new deaths per million and figure \ref{fig:lag-trans} shows how the association changes for change in transport use.~For both new deaths per million and change in transport use, 1 day of lag has the strongest association with government stringency, as such this is the level of lag used in the models in table \ref{tab:addit}\footnote{While the strongest association between change in transport use and government stringency occurs with one day of lag, the association is negative when it is expected to be positive. This potentially leads to a further misspecification of the model, hence why it is only done the additional analysis.}.\\
+Table \ref{tab:addit} shows a table of models which include percentage change in transport and new deaths per million, comparing them to Model 9 which is the main model in this paper. A lagged version of both variables is used because the effect that either has on government stringency is likely to take time. For instance, when new deaths increase to a level where a government wants to increase the stringency of restrictions the process of introducing a new policy may take time. How many days of lag to use is calculated by creating multiple models with a lag from 1 to 50 days and using the days of lag for which there is the strongest association between the coefficient and government stringency. All of these models control for the same variables as in Model 9. Figure \ref{fig:lag-deaths} shows how increasing days of lag affects the association for new deaths per million and figure \ref{fig:lag-trans} shows how the association changes for change in transport use. For both new deaths per million and change in transport use, 1 day of lag has the strongest association with government stringency, as such this is the level of lag used in the models in table \ref{tab:addit}\footnote{While the strongest association between change in transport use and government stringency occurs with one day of lag, the association is negative when it is expected to be positive. This potentially leads to a further misspecification of the model, hence why it is only done the additional analysis.}.\\
 ~\\
-In model 10, when new deaths per million is included, the estimate of distrust remains similar to model 9 (0.31) and remains significant. When change in transport use is included in models 11 and 12, the estimate drops slightly and becomes insignificant, showing that change in transport use is potentially confounding the estimate\footnote{Although the estimate being insignificant may be the result of fewer countries being included in the model. A drop from 64 to 59.}. However, the direction of the coefficient on change in transport use indicates that this is a misspecification of the model. The coefficient in model 13 indicates that for a one unit increase in change in transport (which is substantively an increase in the number of people using transport) the stringency index decreases by 0.52 The coefficients on change in transport in model 11 and 12 shows the problem with including transport in the main model. In theory this coefficient should be positive, such that an increase in percentage change in transport (which in substantial terms would be more people using public transport) would result in the government imposing stricter restrictions. We do not see this in the model because there are long periods of time when both few people are using public transport and government restrictions are high. Therefore, the variables are not included in the main model but as the estimates of distrust remain similar there is still strong evidence in support of the hypothesis.\\
+
+\begin{table}
+\caption{Models Including Daily Deaths and Percent Change in Transport}
+\begin{center}
+\begin{small}
+\begin{tabular}{l c c c c c}
+\hline
+ & Model 9 & Model 12 & Model 13 & Model 14 & Model 15 \\
+\hline
+Distrust in People                & $0.33^{**}$  & $0.31^{**}$  & $0.27$        & $0.26$        & $0.01^{*}$    \\
+                                  & $(0.12)$     & $(0.11)$     & $(0.14)$      & $(0.13)$      & $(0.00)$      \\
+Log of GDP per Capita             & $6.00^{*}$   & $5.90^{*}$   & $4.34$        & $4.13$        & $0.11$        \\
+                                  & $(2.95)$     & $(2.91)$     & $(3.62)$      & $(3.53)$      & $(0.10)$      \\
+GDP Growth                        & $0.59$       & $0.53$       & $0.95$        & $0.86$        & $0.02$        \\
+                                  & $(0.52)$     & $(0.51)$     & $(0.59)$      & $(0.58)$      & $(0.02)$      \\
+Education Index                   & $28.17$      & $27.17$      & $22.87$       & $25.78$       & $0.80$        \\
+                                  & $(22.37)$    & $(22.05)$    & $(27.99)$     & $(27.33)$     & $(0.75)$      \\
+Population over age 65            & $-1.06^{**}$ & $-1.17^{**}$ & $-0.51$       & $-0.64$       & $-0.02$       \\
+                                  & $(0.39)$     & $(0.38)$     & $(0.44)$      & $(0.43)$      & $(0.01)$      \\
+Global Health Security Index      & $0.11$       & $0.10$       & $0.00$        & $0.01$        & $0.00$        \\
+                                  & $(0.17)$     & $(0.16)$     & $(0.20)$      & $(0.20)$      & $(0.01)$      \\
+Polity                            & $-0.38$      & $-0.40$      & $-0.47$       & $-0.46$       & $-0.02$       \\
+                                  & $(0.39)$     & $(0.38)$     & $(0.44)$      & $(0.43)$      & $(0.01)$      \\
+Log of Conflict Index             & $2.39^{*}$   & $2.39^{*}$   & $2.75^{*}$    & $2.79^{*}$    & $0.09^{**}$   \\
+                                  & $(1.06)$     & $(1.04)$     & $(1.19)$      & $(1.16)$      & $(0.03)$      \\
+Population Density                & $0.01$       & $0.01$       & $0.01$        & $0.01$        & $0.00^{*}$    \\
+                                  & $(0.01)$     & $(0.01)$     & $(0.01)$      & $(0.01)$      & $(0.00)$      \\
+Confidence in Government          & $-0.07$      & $-0.05$      & $-0.06$       & $-0.06$       & $-0.00$       \\
+                                  & $(0.09)$     & $(0.09)$     & $(0.11)$      & $(0.11)$      & $(0.00)$      \\
+New Deaths per Million lag 1      &              & $0.73^{***}$ &               & $0.39^{***}$  & $0.02^{***}$  \\
+                                  &              & $(0.02)$     &               & $(0.02)$      & $(0.00)$      \\
+Percent Change in Transport lag 1 &              &              & $-0.52^{***}$ & $-0.45^{***}$ & $-0.01^{***}$ \\
+                                  &              &              & $(0.00)$      & $(0.00)$      & $(0.00)$      \\
+Stringency Index lag 1            &              &              &               &               & $0.97^{***}$  \\
+                                  &              &              &               &               & $(0.00)$      \\
+\hline
+Num. obs.                         & $28479$      & $27280$      & $26046$       & $25007$       & $25006$       \\
+Num. groups: location             & $64$         & $64$         & $59$          & $59$          & $59$          \\
+Var: location (Intercept)         & $107.43$     & $104.40$     & $127.73$      & $121.76$      & $0.08$        \\
+Var: Residual                     & $246.94$     & $181.54$     & $134.16$      & $104.09$      & $5.18$        \\
+\hline
+\multicolumn{6}{l}{\tiny{$^{***}p<0.001$; $^{**}p<0.01$; $^{*}p<0.05$}}
+\end{tabular}
+\end{small}
+\label{tab:addit}
+\end{center}
+\end{table}
+
+In model 12, when new deaths per million is included, the estimate of distrust remains similar to model 9 (0.31) and remains significant. When change in transport use is included in models 13 and 14, the estimate drops slightly and becomes insignificant, showing that change in transport use is potentially confounding the estimate\footnote{Although the estimate being insignificant may be the result of fewer countries being included in the model. A drop from 64 to 59.}. However, the direction of the coefficient on change in transport use indicates that this is a misspecification of the model. The coefficient in model 13 indicates that for a one unit increase in change in transport (which, in substantive terms, is an increase in the number of people using transport) the stringency index decreases by 0.52 The coefficients on change in transport in model 13 and 14 shows the problem with including transport in the main model. In theory this coefficient should be positive, such that an increase in percentage change in transport (which in substantial terms would be more people using public transport) would result in the government imposing stricter restrictions. We do not see this in the model because there are long periods of time when government stringency is high, which results in low transport use and therefore a correlation between low transport use and high stringency.
+
+This problem is adjusted for in model 15, which includes a lagged version of government stringency as an independent variable. This helps adjust for the persistence of government stringency but leads to problems with underestimating coefficient estimates (Keele \& Kelly, 2005). When adjusted for lagged stringency, the estimate of distrust becomes significant and the direction of the estimate of change in transport use becomes positive (fitting with the theoretical explanation). However, due to the problem with using lagged dependent variables new deaths and change in transport are not included in the main model but given that the estimate of distrust remains significant in model 15 there is still strong evidence in support of the hypothesis.\\
 
 \hypertarget{other-policy-measures}{%
 \subsection{Other policy measures}\label{other-policy-measures}}
 
-Another additional analysis conducted is comparing models with difference policy response indices from the OxCGRT project, as the outcome variable. The main policy response used in this study is the stringency index, which is made up of the indicators on lockdown policies. Other indices include the containment and health index, which is the stringency index with the addition of indicators on testing and contact tracing. The economic support index is comprised of indicators which measure a government economic policy in response to the pandemic, such as income support and debt relief. Finally, the overall government response index is comprised of all indicators of government pandemic policy (Hale, et al., 2021). Table \ref{tab:policy} shows the results from these models, compared with model 9, which has the stringency index as the outcome.\\
-~\\
-The models show that with the containment and health index as the outcome variable the estimated effect of distrust remains similar (0.35) and also has a higher level of confidence (99.9\%). When the financial support index is the outcome variable, the estimated effect of distrust remains at a similar level (0.32) but with a large increase in the standard error (0.21) this result is not significant. The last model, which has the overall response index as the outcome variable, again shows a similar result to model 9 and with a higher level of confidence. This model is substantively less interesting, as it is not possible to tell exactly what the level of distrust is having an effect on, but it does add some further robustness in the support of the hypothesis.\\
+Another additional analysis conducted is comparing models with difference policy response indices from the OxCGRT project as the outcome variable. The main policy response used in this study is the stringency index, which is made up of the indicators on lockdown policies. Other indices include the containment and health index, which is the stringency index with the addition of indicators on testing and contact tracing. The economic support index is comprised of indicators which measure a government economic policy in response to the pandemic, such as income support and debt relief. Finally, the overall government response index is comprised of all indicators of government pandemic policy (Hale, et al., 2021). Table \ref{tab:policy} shows the results from these models, compared with model 9, which has the stringency index as the outcome. All models have the same covariates as model 9.\\
 
 \begin{table}
 \caption{Models with different policy measures}
@@ -384,6 +432,9 @@ Var: Residual             & $246.94$    & $151.56$     & $356.86$ & $138.37$    
 \label{tab:policy}
 \end{center}
 \end{table}
+
+\hfill\break
+The models show that with the containment and health index as the outcome variable the estimated effect of distrust remains similar (0.35) and also has a higher level of confidence (99.9\%). When the financial support index is the outcome variable, the estimated effect of distrust remains at a similar level (0.32) but with a large increase in the standard error (0.21) this result is not significant. The last model, which has the overall response index as the outcome variable, again shows a similar result to model 9 and with a higher level of confidence. This model is substantively less interesting, as it is not possible to tell exactly what the level of distrust is having an effect on, but it does add some further robustness in the support of the hypothesis.\\
 
 \hypertarget{discussion}{%
 \subsection{Discussion}\label{discussion}}
@@ -445,63 +496,52 @@ The results provide support for treating the pandemic as a collective action pro
 \section*{References}\label{references}}
 \addcontentsline{toc}{section}{References}
 
-Banks, A. S. \& Wilson, K. A., 2020. Cross-National Time-Series Data Archive (CNTS), Jerusalem: Databanks International.\\
-Bargaina, O. \& Aminjonov, U., 2020. Trust and compliance to public health policies in times of COVID-19. Journal of Public Economics, Volume 192.\\
-Bates, D., Maechler, M., Bolker, B. \& Walker, S., 2015. Fitting Linear Mixed-Effects Models Using lme4. Journal of Statistical Software, 67(1), pp.~1-48.\\
-Bell, A. \& Jones, K., 2015. Explaining Fixed Effects: Random Effects Modeling of Time-Series Cross-Sectional and Panel Data. Political Science Research and Methods, 3(1), pp.~133-153.\\
-Bhadra, A., Mukherjee, A. \& Sarkar, K., 2021. Impact of population density on Covid-19 infected and mortality rate in India. Modeling Earth Systems and Environment, Volume 7, pp.~623-629.\\
-Bjornskov, C., 2012. How Does Social Trust Affect Economic Growth?. Southern Economic Journal, 78(4), pp.~1346-1368.\\
-Cucinotta, D. \& Vanelli, M., 2020. WHO Declares COVID-19 a Pandemic. Acta Biomed, 91(1), pp.~157-160.\\
-Cucinotta, D. \& Vanelli, M., 2020. WHO Declares COVID-19 a Pandemic. Acta Biomed, 91(1), pp.~157-160.\\
-Daniele, G. \& Geys, B., 2015. Interpersonal trust and welfare state support. European Journal of Political Economy, Volume 39, pp.~1-12.\\
-Dong, E., Du, H. \& Gardner, L., 2020. An interactive web-based dashboard to track COVID-19 in real time. Lancet Infectious Diseases, 20(5), pp.~533-534.\\
-Elgara, F. J., Stefaniakb, A. \& Wohl, M. J., 2020. The trouble with trust: Time-series analysis of social capital, income inequality, and COVID-19 deaths in 84 countries. Social Science \& Medicine, Volume 263.\\
-EVS/WVS, 2021a. European Values Study and World Values Survey: Joint EVS/WVS 2017-2021 Dataset, s.l.: JD Systems Institute \& WVSA.\\
-EVS/WVS, 2021b. European Values Study and World Values Survey: Joint EVS/WVS 2017-2021 Dataset - Variable Report (Documentation/Tables). s.l.:GESIS Data Archive, Cologne and JD Systems Institute.\\
-Fox, J. \& Weisberg, S., 2019. An R Companion to Applied Regression. 3rd Edition ed.~Thousand Oaks: Sage.\\
-Giordano, G. N. \& Lindstrom, M., 2016. The 2005 London terror attacks: An investigation of changes in psychological wellbeing and social capital pre- and post-attacks (2003-07)-A UK panel study. SSM - Population Health, Volume 2, pp.~485-494.\\
-GlobeNewswire, 2020. Coronavirus (COVID-19): Global Market Conditions, Vaccines, Trials and Potential Treatments. {[}Online{]}\\
-Available at: \url{https://advance.lexis.com/api/permalink/ae7c2029-a2d4-4750-8f85-a70a6f7330f8/?context=1519360\&federationidp=CZVRR460015} {[}Accessed August 2021{]}.\\
-Goldstein, D. A. N. \& Wiedemann, J., 2021. Who Do You Trust? The Consequences of Partisanship and Trust for Public Responsiveness to COVID-19 Orders. Perspectives on Politics, pp.~1-27.\\
-Google LLC, 2021. Google COVID-19 Community Mobility Reports. {[}Online{]}\\
-Available at: \url{https://www.google.com/covid19/mobility/} {[}Accessed May 2020{]}.\\
-Guiso, L., Sapienza, P. \& Zingales, L., 2004. The role of social capital in financial development. American Economic Review, 94(3), pp.~526-556.\\
-Guiso, L., Sapienza, P. \& Zingales, L., 2009. Cultural biases in economic exchange?. The Quarterly Journal of Economics, 124(3), pp.~1095-1131.\\
-Häuberer, J., 2011. The Founding Concepts of Social Capital - Bourdieu's Theory of Capital and Coleman's Rational-Choice Approach to Social Capital. In: Social Capital Theory. s.l.:VS Verlag für Sozialwissenschaften.\\
-Hale, T. et al., 2021. A global panel database of pandemic policies (Oxford COVID-19 Government Response Tracker). Nature Human Behaviour, Volume 5, pp.~529-538.\\
-Harring, N., Jagers, S. C. \& Lofgren, A., 2021. COVID-19: Large-scale collective action, government intervention, and the importance of trust. World Development, Volume 138.\\
-Helliwell, J. F. \& Putnam, R. D., 1995. Economic Growth and Social Capital in Italy. Eastern Economic Journal , 21(3), pp.~295-307.\\
-House, J. S. \& Wolf, S., 1978. Effects of urban residence on interpersonal trust and helping behavior. Journal of Personality and Social Psychology, 36(9), pp.~1029-1043.\\
-Imai, K. \& Kim, I. S., 2019. When Should We Use Unit Fixed Effects Regression Models for Causal Inference with Longitudinal Data?. American Journal of Political Science, 63(2), pp.~467-490.\\
-Knack, S., 2002. Social Capital and the Quality of Government: Evidence from the States. American Journal of Political Science, 46(4), pp.~772-785.\\
-Lindström, M., 2020. A commentary on ``The trouble with trust: Time-series analysis of social capital, income inequality, and COVID-19 deaths in 84 countries''. Social Science \& Medicine, Volume 263.\\
-Loy, A. \& Hofmann, H., 2014. HLMdiag: A Suite of Diagnostics for Hierarchical Linear Models in R. Journal of Statistical Software, 56(5), pp.~1-28.\\
-Marshall, M. G. \& Gurr, T. R., 2020. Polity5 - Political Regime Characteristics and Transitions, 1800-2018 - Dataset Users' Manual. {[}Online{]}\\
-Available at: \url{http://www.systemicpeace.org/inscr/p5manualv2018.pdf}\\
-{[}Accessed August 2021{]}.\\
-Nieuwenhuis, R., Grotenhuis, M. t. \& Pelzer, B., 2012. influence.ME: Tools for Detecting Influential Data in Mixed Effects Models. R Journal, 4(2), pp.~38-47.\\
-Nuclear Threat Initiative, Johns Hopkins Center for Health Security, The Economist Intelligence Unit, 2019. 2019 Global Health Security Index. {[}Online{]}\\
-Available at: \url{https://www.ghsindex.org/}\\
-{[}Accessed May 2021{]}.\\
-Olson, M., 1965. The Logic of Collective Action: Public Goods and the Theory of Groups. Cambridge, Massachusetts: Harvard University Press.\\
-Olson, M., 1982. The Logic. In: The Rise and Decline of Nations: Economic Growth, Stagnation, and Social Rigidities. s.l.:Yale University Press, pp.~17-32.\\
-Ostrom, E., 2009. Collective Action Theory. In: C. Boix \& S. C. Stokes, eds.~The Oxford Handbook of Comparative Politics . Oxford: Oxford University Press.\\
-R Core Team, 2020. R: A language and environment for statistical computing, Vienna: R Foundation for Statistical Computing.\\
-Ritchie, H. et al., 2020a. Coronavirus (COVID-19) Deaths. {[}Online{]}\\
-Available at: \url{https://ourworldindata.org/covid-deaths} {[}Accessed August 2020{]}.\\
-Ritchie, H. et al., 2020b. COVID-19: Google Mobility Trends. {[}Online{]} Available at: \url{https://ourworldindata.org/covid-google-mobility-trends} {[}Accessed May 2021{]}.\\
-Solt, F., 2020. Measuring Income Inequality Across Countries and Over Time: The Standardized World Income Inequality Database. Social Science Quarterly, 101(3), pp.~1183-1199.\\
-Twenge, J. M., Campbell, W. K. \& Carter, N. T., 2014. Declines in Trust in Others and Confidence in Institutions Among American Adults and Late Adolescents. Psychological Science, 25(10), pp.~1914-1923.\\
-United Nations Development Programme, 2020. Education index. {[}Online{]}\\
-Available at: \url{http://hdr.undp.org/en/indicators/103706} {[}Accessed June 2021{]}.\\
-Warren, M. E., 1999. Introduction. In: M. E. Warren, ed.~Democracy and Trust. Cambridge: Cambridge University Press, pp.~1-21.\\
-World Bank, 2021a. GDP Growth (annual \%). {[}Online{]}\\
-Available at: \url{https://data.worldbank.org/indicator/NY.GDP.MKTP.KD.ZG} {[}Accessed June 2021{]}.\\
-World Bank, 2021b. GDP (current US\$). {[}Online{]}\\
-Available at: \url{https://data.worldbank.org/indicator/NY.GDP.MKTP.CD} {[}Accessed May 2021{]}.\\
-YouGov Plc, 2020. COVID-19: Level of support for actions governments could take. {[}Online{]}\\
-Available at: \url{https://yougov.co.uk/topics/international/articles-reports/2020/03/17/level-support-actions-governments-could-take} {[}Accessed August 2021{]}.\\
-Zak, P. J. \& Knack, S., 2001. Trust and Growth. The Economic Journal, Volume 111, pp.~195-321.\\
+Banks, A. S. \& Wilson, K. A., 2020. \emph{Cross-National Time-Series Data Archive (CNTS)}, Jerusalem: Databanks International.\\
+Bargaina, O. \& Aminjonov, U., 2020. Trust and compliance to public health policies in times of COVID-19. \emph{Journal of Public Economics}, Volume 192.\\
+Bates, D., Maechler, M., Bolker, B. \& Walker, S., 2015. Fitting Linear Mixed-Effects Models Using lme4. \emph{Journal of Statistical Software}, 67(1), pp.~1-48.\\
+Bell, A. \& Jones, K., 2015. Explaining Fixed Effects: Random Effects Modeling of Time-Series Cross-Sectional and Panel Data. \emph{Political Science Research and Methods}, 3(1), pp.~133-153.\\
+Bhadra, A., Mukherjee, A. \& Sarkar, K., 2021. Impact of population density on Covid-19 infected and mortality rate in India. \emph{Modeling Earth Systems and Environment}, Volume 7, pp.~623-629.\\
+Bjornskov, C., 2012. How Does Social Trust Affect Economic Growth?. \emph{Southern Economic Journal}, 78(4), pp.~1346-1368.\\
+Cucinotta, D. \& Vanelli, M., 2020. WHO Declares COVID-19 a Pandemic. \emph{Acta Biomed}, 91(1), pp.~157-160.\\
+Daniele, G. \& Geys, B., 2015. Interpersonal trust and welfare state support. \emph{European Journal of Political Economy}, Volume 39, pp.~1-12.\\
+Dong, E., Du, H. \& Gardner, L., 2020. An interactive web-based dashboard to track COVID-19 in real time. \emph{Lancet Infectious Diseases}, 20(5), pp.~533-534.\\
+Elgara, F. J., Stefaniakb, A. \& Wohl, M. J., 2020. The trouble with trust: Time-series analysis of social capital, income inequality, and COVID-19 deaths in 84 countries. \emph{Social Science \& Medicine}, Volume 263.\\
+EVS/WVS, 2021a. \emph{European Values Study and World Values Survey: Joint EVS/WVS 2017-2021 Dataset}, JD Systems Institute \& WVSA.\\
+EVS/WVS, 2021b. \emph{European Values Study and World Values Survey: Joint EVS/WVS 2017-2021 Dataset - Variable Report (Documentation/Tables}), GESIS Data Archive, Cologne and JD Systems Institute.\\
+Fox, J. \& Weisberg, S., 2019. \emph{An R Companion to Applied Regression}. 3rd ed.~Thousand Oaks: Sage.\\
+Giordano, G. N. \& Lindstrom, M., 2016. The 2005 London terror attacks: An investigation of changes in psychological wellbeing and social capital pre- and post-attacks (2003-07)-A UK panel study. \emph{SSM - Population Health}, Volume 2, pp.~485-494.\\
+GlobeNewswire, 2020. \emph{Coronavirus (COVID-19): Global Market Conditions, Vaccines, Trials and Potential Treatments.} Available at: \url{https://advance.lexis.com/api/permalink/ae7c2029-a2d4-4750-8f85-a70a6f7330f8/?context=1519360\&federationidp=CZVRR460015} {[}Accessed August 2021{]}.\\
+Goldstein, D. A. N. \& Wiedemann, J., 2021. Who Do You Trust? The Consequences of Partisanship and Trust for Public Responsiveness to COVID-19 Orders. \emph{Perspectives on Politics}, pp.~1-27.\\
+Google LLC, 2021. \emph{Google COVID-19 Community Mobility Reports}. Available at: \url{https://www.google.com/covid19/mobility/} {[}Accessed May 2020{]}.\\
+Guiso, L., Sapienza, P. \& Zingales, L., 2004. The role of social capital in financial development. \emph{American Economic Review}, 94(3), pp.~526-556.\\
+Guiso, L., Sapienza, P. \& Zingales, L., 2009. Cultural biases in economic exchange?. \emph{The Quarterly Journal of Economics}, 124(3), pp.~1095-1131.\\
+Häuberer, J., 2011. The Founding Concepts of Social Capital - Bourdieu's Theory of Capital and Coleman's Rational-Choice Approach to Social Capital. In: \emph{Social Capital Theory}. VS Verlag für Sozialwissenschaften, pp.~33-51.\\
+Hale, T. et al., 2021. A global panel database of pandemic policies (Oxford COVID-19 Government Response Tracker). \emph{Nature Human Behaviour}, Volume 5, pp.~529-538.\\
+Harring, N., Jagers, S. C. \& Lofgren, A., 2021. COVID-19: Large-scale collective action, government intervention, and the importance of trust. \emph{World Development}, Volume 138.\\
+Helliwell, J. F. \& Putnam, R. D., 1995. Economic Growth and Social Capital in Italy. \emph{Eastern Economic Journal}, 21(3), pp.~295-307.\\
+House, J. S. \& Wolf, S., 1978. Effects of urban residence on interpersonal trust and helping behavior. \emph{Journal of Personality and Social Psychology}, 36(9), pp.~1029-1043.\\
+Imai, K. \& Kim, I. S., 2019. When Should We Use Unit Fixed Effects Regression Models for Causal Inference with Longitudinal Data?. \emph{American Journal of Political Science}, 63(2), pp.~467-490.\\
+Keele, L. \& Kelly, N., 2005. Dynamic Models for Dynamic Theories: The Ins and Outs of Lagged Dependent Variable. \emph{Political Analysis}, 14(2), pp.~186-205.\\
+Knack, S., 2002. Social Capital and the Quality of Government: Evidence from the States. \emph{American Journal of Political Science}, 46(4), pp.~772-785.\\
+Lindström, M., 2020. A commentary on ``The trouble with trust: Time-series analysis of social capital, income inequality, and COVID-19 deaths in 84 countries''. \emph{Social Science \& Medicine}, Volume 263.\\
+Loy, A. \& Hofmann, H., 2014. HLMdiag: A Suite of Diagnostics for Hierarchical Linear Models in R. \emph{Journal of Statistical Software}, 56(5), pp.~1-28.\\
+Marshall, M. G. \& Gurr, T. R., 2020. \emph{Polity5 - Political Regime Characteristics and Transitions, 1800-2018 - Dataset Users' Manual}. Available at: \href{http://www.systemicpeace.org/inscr/p5manualv2018.pdf}{\textless http://www.systemicpeace.org/inscr/p5manualv2018.pdf\textgreater{}} {[}Accessed August 2021{]}.\\
+Nieuwenhuis, R., Grotenhuis, M. t. \& Pelzer, B., 2012. influence.ME: Tools for Detecting Influential Data in Mixed Effects Models. \emph{R Journal}, 4(2), pp.~38-47.\\
+Nuclear Threat Initiative, Johns Hopkins Center for Health Security, The Economist Intelligence Unit, 2019. \emph{2019 Global Health Security Index}. Available at: \url{https://www.ghsindex.org/} {[}Accessed May 2021{]}.\\
+Olson, M., 1965. \emph{The Logic of Collective Action: Public Goods and the Theory of Groups}. Cambridge, Massachusetts: Harvard University Press.\\
+Olson, M., 1982. The Logic. In: \emph{The Rise and Decline of Nations: Economic Growth, Stagnation, and Social Rigidities}. Yale University Press, pp.~17-32.\\
+Ostrom, E., 2009. Collective Action Theory. In: C. Boix \& S. C. Stokes, eds.~\emph{The Oxford Handbook of Comparative Politics}. Oxford: Oxford University Press.\\
+R Core Team, 2020. \emph{R: A language and environment for statistical computing}, Vienna: R Foundation for Statistical Computing.\\
+Ritchie, H. et al., 2020a. \emph{Coronavirus (COVID-19) Deaths}. Available at: \url{https://ourworldindata.org/covid-deaths} {[}Accessed August 2020{]}.\\
+Ritchie, H. et al., 2020b. \emph{COVID-19: Google Mobility Trends}. Available at: \url{https://ourworldindata.org/covid-google-mobility-trends} {[}Accessed May 2021{]}.\\
+Solt, F., 2020. Measuring Income Inequality Across Countries and Over Time: The Standardized World Income Inequality Database. \emph{Social Science Quarterly}, 101(3), pp.~1183-1199.\\
+Twenge, J. M., Campbell, W. K. \& Carter, N. T., 2014. Declines in Trust in Others and Confidence in Institutions Among American Adults and Late Adolescents. \emph{Psychological Science}, 25(10), pp.~1914-1923.\\
+United Nations Development Programme, 2020. \emph{Education index}. Available at: \url{http://hdr.undp.org/en/indicators/103706} {[}Accessed June 2021{]}.\\
+Warren, M. E., 1999. Introduction. In: M. E. Warren, ed.~\emph{Democracy and Trust}. Cambridge: Cambridge University Press, pp.~1-21.\\
+World Bank, 2021a. \emph{GDP Growth (annual \%)}. Available at: \url{https://data.worldbank.org/indicator/NY.GDP.MKTP.KD.ZG} {[}Accessed June 2021{]}.\\
+World Bank, 2021b. \emph{GDP (current US\$)}. Available at: \url{https://data.worldbank.org/indicator/NY.GDP.MKTP.CD} {[}Accessed May 2021{]}.\\
+YouGov Plc, 2020. \emph{COVID-19: Level of support for actions governments could take}. Available at: \url{https://yougov.co.uk/topics/international/articles-reports/2020/03/17/level-support-actions-governments-could-take} {[}Accessed August 2021{]}.\\
+Zak, P. J. \& Knack, S., 2001. Trust and Growth. \emph{The Economic Journal}, Volume 111, pp.~195-321.\\
 
 \newpage
 
@@ -510,6 +550,8 @@ Zak, P. J. \& Knack, S., 2001. Trust and Growth. The Economic Journal, Volume 11
 \addcontentsline{toc}{section}{Appendix}
 
 \setcounter{table}{0}  \renewcommand{\thetable}{A\arabic{table}} \setcounter{figure}{0} \renewcommand{\thefigure}{A\arabic{figure}}
+
+Replication data and scripts available at: \url{https://github.com/KFHH0/dissertation}
 
 \begin{figure}
 \includegraphics[width=0.8\linewidth]{write_up_test_files/figure-latex/stringency-sd-1} \caption{Standard Deviation of Government Stringency During the Pandemic}\label{fig:stringency-sd}
@@ -554,53 +596,6 @@ Zak, P. J. \& Knack, S., 2001. Trust and Growth. The Economic Journal, Volume 11
 \begin{figure}
 \includegraphics[width=0.8\linewidth]{write_up_test_files/figure-latex/lag-trans-1} \caption{The Coefficient on Change in Transport for increasing days of lag}\label{fig:lag-trans}
 \end{figure}
-
-\begin{table}
-\caption{Models Including Daily Deaths and Percent Change in Transport}
-\begin{center}
-\begin{small}
-\begin{tabular}{l c c c c c}
-\hline
- & Model 9 & Model 12 & Model 13 & Model 14 & Model 15 \\
-\hline
-Distrust in People                & $0.33^{**}$  & $0.31^{**}$  & $0.27$        & $0.26$        & $0.01^{*}$    \\
-                                  & $(0.12)$     & $(0.11)$     & $(0.14)$      & $(0.13)$      & $(0.00)$      \\
-Log of GDP per Capita             & $6.00^{*}$   & $5.90^{*}$   & $4.34$        & $4.13$        & $0.11$        \\
-                                  & $(2.95)$     & $(2.91)$     & $(3.62)$      & $(3.53)$      & $(0.10)$      \\
-GDP Growth                        & $0.59$       & $0.53$       & $0.95$        & $0.86$        & $0.02$        \\
-                                  & $(0.52)$     & $(0.51)$     & $(0.59)$      & $(0.58)$      & $(0.02)$      \\
-Education Index                   & $28.17$      & $27.17$      & $22.87$       & $25.78$       & $0.80$        \\
-                                  & $(22.37)$    & $(22.05)$    & $(27.99)$     & $(27.33)$     & $(0.75)$      \\
-Population over age 65            & $-1.06^{**}$ & $-1.17^{**}$ & $-0.51$       & $-0.64$       & $-0.02$       \\
-                                  & $(0.39)$     & $(0.38)$     & $(0.44)$      & $(0.43)$      & $(0.01)$      \\
-Global Health Security Index      & $0.11$       & $0.10$       & $0.00$        & $0.01$        & $0.00$        \\
-                                  & $(0.17)$     & $(0.16)$     & $(0.20)$      & $(0.20)$      & $(0.01)$      \\
-Polity                            & $-0.38$      & $-0.40$      & $-0.47$       & $-0.46$       & $-0.02$       \\
-                                  & $(0.39)$     & $(0.38)$     & $(0.44)$      & $(0.43)$      & $(0.01)$      \\
-Log of Conflict Index             & $2.39^{*}$   & $2.39^{*}$   & $2.75^{*}$    & $2.79^{*}$    & $0.09^{**}$   \\
-                                  & $(1.06)$     & $(1.04)$     & $(1.19)$      & $(1.16)$      & $(0.03)$      \\
-Population Density                & $0.01$       & $0.01$       & $0.01$        & $0.01$        & $0.00^{*}$    \\
-                                  & $(0.01)$     & $(0.01)$     & $(0.01)$      & $(0.01)$      & $(0.00)$      \\
-Confidence in Government          & $-0.07$      & $-0.05$      & $-0.06$       & $-0.06$       & $-0.00$       \\
-                                  & $(0.09)$     & $(0.09)$     & $(0.11)$      & $(0.11)$      & $(0.00)$      \\
-New Deaths per Million lag 1      &              & $0.73^{***}$ &               & $0.39^{***}$  & $0.02^{***}$  \\
-                                  &              & $(0.02)$     &               & $(0.02)$      & $(0.00)$      \\
-Percent Change in Transport lag 1 &              &              & $-0.52^{***}$ & $-0.45^{***}$ & $-0.01^{***}$ \\
-                                  &              &              & $(0.00)$      & $(0.00)$      & $(0.00)$      \\
-Stringency Index lag 1            &              &              &               &               & $0.97^{***}$  \\
-                                  &              &              &               &               & $(0.00)$      \\
-\hline
-Num. obs.                         & $28479$      & $27280$      & $26046$       & $25007$       & $25006$       \\
-Num. groups: location             & $64$         & $64$         & $59$          & $59$          & $59$          \\
-Var: location (Intercept)         & $107.43$     & $104.40$     & $127.73$      & $121.76$      & $0.08$        \\
-Var: Residual                     & $246.94$     & $181.54$     & $134.16$      & $104.09$      & $5.18$        \\
-\hline
-\multicolumn{6}{l}{\tiny{$^{***}p<0.001$; $^{**}p<0.01$; $^{*}p<0.05$}}
-\end{tabular}
-\end{small}
-\label{tab:addit}
-\end{center}
-\end{table}
 
 \begin{table}
 \caption{Models Testing the Effect of Removing Countries from the Bivariate Model}
