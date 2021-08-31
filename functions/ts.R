@@ -79,7 +79,8 @@ get_coefs = function(data, .formula, start = "2020-04-01", n_days = 4,
     geom_line() +
     theme_minimal() +
     theme(axis.title = element_blank(),
-          plot.caption = element_text(hjust = 0))
+          plot.caption = element_text(hjust = 0)) +
+    labs(caption = "Slope and intercept estimated using a bivariate linear regression, shown with \n95% confidence intervals")
   if (print_plot) print(plot) 
   
   if (is.null(.labs)) {
